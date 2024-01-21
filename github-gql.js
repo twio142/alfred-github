@@ -555,7 +555,7 @@ const MY_PRS = [`
 
 const SEARCH = `
   query SearchRepos($q: String!, $type: SearchType = REPOSITORY, $cursor: String) {
-    search(query: $q, type: $type, first: 20, after: $cursor) {
+    search(query: $q, type: $type, first: 12, after: $cursor) {
       nodes {
         ...queryAnyType
       }

@@ -50,6 +50,9 @@ class Interface {
       }
     } else if (process.env.action?.startsWith("SEARCH_")) {
       if (this.#debug) console.error(2, process.env.action);
+      if (process.env.queryPrefix) query = process.env.queryPrefix + " " + query;
+      this.#prevId = process.env.prevId || this.#prevId;
+      this.#prevNodeId = process.env.prevNodeId;
       await this.search(query, process.env.action);
     } else if (process.env.action) {
       if (this.#debug) console.error(3, process.env.action, process.env.prevId, process.env.prevNodeId);
@@ -346,7 +349,7 @@ class Interface {
   async search(query, action = "SEARCH_REPO") {
     if (!action.startsWith("SEARCH_")) throw new Error("Invalid action.");
     try {
-      let { data, id } = await this.#Cache.request(action, { q: query });
+      let { data, id } = await this.#Cache.request(action, { q: query }, null, this.#prevId, this.#prevNodeId);
       this.formatOutput(data, id);
     } catch (e) {
       this.Workflow.warnEmpty("Error: " + e.message);
@@ -722,8 +725,8 @@ class Interface {
         icon: { path: "icons/issue.png" },
         match: "issues",
         variables: {
-          action: "REPO_ISSUES",
-          options: JSON.stringify({ owner, name }),
+          action: "SEARCH_ISSUE",
+          queryPrefix: `repo:${repo.nameWithOwner} state:open, type:issue`,
           prevId: this.#prevId,
           prevNodeId: this.#prevNodeId,
         },
@@ -743,8 +746,8 @@ class Interface {
         icon: { path: "icons/pr.png" },
         match: "prs pull requests",
         variables: {
-          action: "REPO_PRS",
-          options: JSON.stringify({ owner, name }),
+          action: "SEARCH_ISSUE",
+          queryPrefix: `repo:${repo.nameWithOwner} state:open, type:pr`,
           prevId: this.#prevId,
           prevNodeId: this.#prevNodeId,
         },
@@ -824,7 +827,7 @@ class Interface {
       title: `${user.login}${user.name ? `  (${user.name}) ` : ""}`,
       subtitle: "Open in browser",
       icon: {
-        path: `icons/${prevNodeId.startsWith("U") ? "user" : "org"}.png`,
+        path: `icons/${user.id.startsWith("U") ? "user" : "org"}.png`,
       },
       text: {
         largetype: user.bio || user.description,
@@ -852,8 +855,8 @@ class Interface {
         icon: { path: "icons/repo.png" },
         match: "repos",
         variables: {
-          action: "USER_REPOS",
-          options: JSON.stringify({ login: user.login }),
+          action: "SEARCH_REPO",
+          queryPrefix: `${user.id.startsWith('U') ? 'user' : 'org'}:${user.login}`,
           prevId: this.#prevId,
           prevNodeId: this.#prevNodeId,
         },
@@ -875,7 +878,7 @@ class Interface {
           action: user.viewerIsFollowing ? "UNFOLLOW" : "FOLLOW",
           options: JSON.stringify({
             id: user.id,
-            org: prevNodeId.startsWith("O"),
+            org: user.id.startsWith("O"),
           }),
         },
       });

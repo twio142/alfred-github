@@ -144,9 +144,9 @@ esac</string>
 				<key>queuedelaycustom</key>
 				<integer>3</integer>
 				<key>queuedelayimmediatelyinitially</key>
-				<false/>
+				<true/>
 				<key>queuedelaymode</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>queuemode</key>
 				<integer>2</integer>
 				<key>runningsubtext</key>
@@ -156,7 +156,7 @@ esac</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
-				<string>interface.js</string>
+				<string></string>
 				<key>subtext</key>
 				<string></string>
 				<key>title</key>

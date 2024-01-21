@@ -1,0 +1,21 @@
+{
+  "name": "user.workflow.b84927c2-89c7-40c4-b978-ef575189fe5f",
+  "version": "1.0.0",
+  "description": "GitHub Workflow for Alfred 5",
+  "main": "",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@octokit/auth-oauth-user": "^4.0.1",
+    "@octokit/core": "^5.0.2",
+    "@octokit/plugin-paginate-graphql": "^4.0.0",
+    "@octokit/plugin-paginate-rest": "^9.1.5",
+    "he": "^1.2.0",
+    "node-fetch": "^3.3.2"
+  }
+}

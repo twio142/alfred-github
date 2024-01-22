@@ -251,7 +251,7 @@ class Interface {
     );
     let repos = [];
     (await Promise.all(promises))
-      .map((p) => p.data || [])
+      .map((p) => p.data?.map(node => ({ ...node, prevId: p.id })) || [])
       .flat()
       .map((node) => (node.id.startsWith("R_") ? node : node.repository))
       .forEach(
@@ -259,7 +259,7 @@ class Interface {
           repos.find((n) => n.id === node.id) || repos.push(node)
       );
     repos.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-    return repos;
+    repos.forEach(repo => this.formatOutput([repo], repo.prevId));
   }
 
   async mainMenu(query) {
@@ -274,7 +274,7 @@ class Interface {
         valid: false,
       });
     } else {
-      this.formatOutput(await this.myRelatedRepos());
+      await this.myRelatedRepos();
       this.Workflow.filter(query);
     }
     this.Workflow.addItem({

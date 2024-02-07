@@ -65,7 +65,7 @@ class GitHub {
         data = await this.#Octokit.paginate(...ACTION);
       } else {
         data = (await this.#Octokit.request(...ACTION)).data;
-        if (data.total_count !== undefined && Array.isArray(data.items))
+        if (data?.total_count !== undefined && Array.isArray(data.items))
           data = data.items;
       }
       if (action === "MY_NOTIFICATIONS") {

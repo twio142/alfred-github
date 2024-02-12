@@ -185,6 +185,11 @@ esac</string>
 			<integer>1</integer>
 		</dict>
 		<dict>
+			<key>config</key>
+			<dict>
+				<key>unstackview</key>
+				<false/>
+			</dict>
 			<key>type</key>
 			<string>alfred.workflow.utility.hidealfred</string>
 			<key>uid</key>
@@ -357,11 +362,6 @@ esac</string>
 	</dict>
 	<key>userconfigurationconfig</key>
 	<array/>
-	<key>variables</key>
-	<dict>
-		<key>hotkey</key>
-		<string>0</string>
-	</dict>
 	<key>version</key>
 	<string>1.0.0</string>
 	<key>webaddress</key>

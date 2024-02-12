@@ -837,6 +837,7 @@ class Interface {
         },
       });
     }
+    this.#prevNodeId = null;
   }
 
   #userMenu(user) {
@@ -903,6 +904,7 @@ class Interface {
           }),
         },
       });
+    this.#prevNodeId = null;
   }
 
   runCommand(command, query) {

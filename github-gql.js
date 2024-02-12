@@ -23,6 +23,11 @@ fragment queryRepo on Repository {
   owner {
     id
   }
+  parent {
+    nameWithOwner
+    id
+    url
+  }
   hasWikiEnabled
   homepageUrl
   viewerHasStarred

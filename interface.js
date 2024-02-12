@@ -395,9 +395,10 @@ class Interface {
     let title = [name + " ", starred, watched].filter(Boolean).join(" ");
     let lang = repo.primaryLanguage?.name,
       stars = convertNum(repo.stargazerCount),
-      updated = datetimeFormat(repo.updatedAt);
+      updated = datetimeFormat(repo.updatedAt),
+      fork = repo.parent ? `⑂ ${repo.parent.nameWithOwner}` : "";
     stars = stars ? `★ ${stars}` : "";
-    let subtitle = [lang, stars, updated].filter(Boolean).join(" · ");
+    let subtitle = [lang, stars, updated, fork].filter(Boolean).join(" · ");
     this.Workflow.addItem({
       title,
       subtitle,
@@ -405,7 +406,7 @@ class Interface {
       autocomplete: repo.nameWithOwner,
       variables: { execute: "open_link" },
       match: matchStr(repo.nameWithOwner),
-      icon: { path: `icons/repo${repo.isPrivate ? "_private" : ""}.png` },
+      icon: { path: `icons/repo${repo.isPrivate ? "_private" : repo.viewerHasStarred ? "_star" : ""}.png` },
       text: {
         largetype: repo.description,
         copy: repo.name,
@@ -441,7 +442,7 @@ class Interface {
       arg: user.url,
       autocomplete: user.login,
       icon: {
-        path: `icons/${user.id.startsWith("U") ? "user" : "organization"}.png`,
+        path: `icons/${user.id.startsWith("U") ? "user" : "organization"}${user.viewerIsFollowing ? "_follow" : ""}.png`,
       },
       variables: { execute: "open_link" },
       match: matchStr(user.login),
@@ -680,6 +681,7 @@ class Interface {
       subtitle: "Open in browser",
       icon: { path: "icons/repo.png" },
       match: "wiki homepage ssh url link",
+      quicklookurl: repo.url,
       arg: repo.url,
       text: {
         largetype: repo.description,
@@ -715,6 +717,7 @@ class Interface {
       title: owner,
       icon: { path: "icons/user.png" },
       match: `user ${owner}`,
+      quicklookurl: repo.url.replace(`/${name}`, ''),
       variables: { prevNodeId: repo.owner.id, prevId: -1 },
     });
     repo.issues.totalCount &&
@@ -724,6 +727,7 @@ class Interface {
           }`,
         icon: { path: "icons/issue.png" },
         match: "issues",
+        quicklookurl: `${repo.url}/issues`,
         variables: {
           action: "SEARCH_ISSUE",
           queryPrefix: `repo:${repo.nameWithOwner} state:open, type:issue`,
@@ -745,6 +749,7 @@ class Interface {
           }`,
         icon: { path: "icons/pr.png" },
         match: "prs pull requests",
+        quicklookurl: `${repo.url}/pulls`,
         variables: {
           action: "SEARCH_ISSUE",
           queryPrefix: `repo:${repo.nameWithOwner} state:open, type:pr`,
@@ -764,6 +769,7 @@ class Interface {
         title: "Releases",
         icon: { path: "icons/release.png" },
         match: "releases",
+        quicklookurl: `${repo.url}/releases`,
         variables: {
           action: "REPO_RELEASES",
           options: JSON.stringify({ owner, name }),
@@ -813,6 +819,21 @@ class Interface {
                 ? "UNSUBSCRIBED"
                 : "SUBSCRIBED",
           }),
+        },
+      });
+    }
+    if (repo.parent) {
+      this.Workflow.addItem({
+        title: repo.parent.nameWithOwner,
+        icon: { path: "icons/fork.png" },
+        match: "fork",
+        quicklookurl: repo.parent.url,
+        text: { copy: repo.parent.nameWithOwner },
+        variables: {
+          action: "NODES",
+          options: JSON.stringify({ids: [repo.parent.id]}),
+          prevId: this.#prevId,
+          prevNodeId: this.#prevNodeId,
         },
       });
     }

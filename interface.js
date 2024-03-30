@@ -130,6 +130,13 @@ class Interface {
         action: "MY_REPOS",
         options: JSON.stringify({ multiPages: true }),
       },
+      mods: {
+        shift: {
+          subtitle: "Open in browser",
+          arg: `${baseUrl}/${username}?tab=repositories`,
+          variables: { execute: "open_link" },
+        },
+      }
     });
     this.Workflow.addItem({
       title: "My Starred Repos",
@@ -139,6 +146,13 @@ class Interface {
         action: "MY_STARS",
         options: JSON.stringify({ multiPages: true }),
       },
+      mods: {
+        shift: {
+          subtitle: "Open in browser",
+          arg: `${baseUrl}/${username}?tab=stars`,
+          variables: { execute: "open_link" },
+        },
+      }
     });
     this.Workflow.addItem({
       title: "My Lists",
@@ -148,6 +162,13 @@ class Interface {
         action: "MY_LISTS",
         options: JSON.stringify({ multiPages: true }),
       },
+      mods: {
+        shift: {
+          subtitle: "Open in browser",
+          arg: `${baseUrl}/${username}?tab=stars`,
+          variables: { execute: "open_link" },
+        },
+      }
     });
     this.Workflow.addItem({
       title: "My Watching Repos",
@@ -157,6 +178,13 @@ class Interface {
         action: "MY_WATCHING",
         options: JSON.stringify({ multiPages: true }),
       },
+      mods: {
+        shift: {
+          subtitle: "Open in browser",
+          arg: `${baseUrl}/${username}?tab=watching`,
+          variables: { execute: "open_link" },
+        },
+      }
     });
     this.Workflow.addItem({
       title: "My Gists",
@@ -166,6 +194,13 @@ class Interface {
         action: "MY_GISTS",
         options: JSON.stringify({ multiPages: true }),
       },
+      mods: {
+        shift: {
+          subtitle: "Open in browser",
+          arg: `${baseUrl}/gist${username}`,
+          variables: { execute: "open_link" },
+        },
+      }
     });
     this.Workflow.addItem({
       title: "My Starred Gists",
@@ -175,6 +210,13 @@ class Interface {
         action: "MY_STARRED_GISTS",
         options: JSON.stringify({ multiPages: true }),
       },
+      mods: {
+        shift: {
+          subtitle: "Open in browser",
+          arg: `${baseUrl}/gist${username}/starred`,
+          variables: { execute: "open_link" },
+        },
+      }
     });
     this.Workflow.addItem({
       title: "My Following Users",
@@ -184,6 +226,13 @@ class Interface {
         action: "MY_FOLLOWING",
         options: JSON.stringify({ multiPages: true }),
       },
+      mods: {
+        shift: {
+          subtitle: "Open in browser",
+          arg: `${baseUrl}/${username}?tab=following`,
+          variables: { execute: "open_link" },
+        },
+      }
     });
     this.Workflow.addItem({
       title: "My Issues",
@@ -193,6 +242,13 @@ class Interface {
         action: "MY_ISSUES",
         options: JSON.stringify({ multiPages: true }),
       },
+      mods: {
+        shift: {
+          subtitle: "Open in browser",
+          arg: `${baseUrl}/issues`,
+          variables: { execute: "open_link" },
+        },
+      }
     });
     this.Workflow.addItem({
       title: "My Pull Requests",
@@ -202,6 +258,13 @@ class Interface {
         action: "MY_PRS",
         options: JSON.stringify({ multiPages: true }),
       },
+      mods: {
+        shift: {
+          subtitle: "Open in browser",
+          arg: `${baseUrl}/pulls`,
+          variables: { execute: "open_link" },
+        },
+      }
     });
     this.Workflow.addItem({
       title: "My Notifications",
@@ -211,6 +274,29 @@ class Interface {
         action: "MY_NOTIFICATIONS",
         options: JSON.stringify({ multiPages: true }),
       },
+      mods: {
+        shift: {
+          subtitle: "Open in browser",
+          arg: `${baseUrl}/notifications`,
+          variables: { execute: "open_link" },
+        },
+      }
+    });
+    this.Workflow.addItem({
+      title: "My Codespaces",
+      icon: { path: "icons/codespace.png" },
+      match: "codespaces",
+      variables: {
+        action: "MY_CODESPACES",
+        options: JSON.stringify({ multiPages: true }),
+      },
+      mods: {
+        shift: {
+          subtitle: "Open in browser",
+          arg: `${baseUrl}/codespaces`,
+          variables: { execute: "open_link" },
+        },
+      }
     });
     this.Workflow.addItem({
       title: "My Profile",
@@ -379,11 +465,13 @@ class Interface {
       if (node.id?.split("_")[0] in lookUp) {
         lookUp[node.id.split("_")[0]].call(this, node, id);
       } else if (["tree", "blob"].includes(node.type)) {
-        this.#formatTree(node, id);
+        this.#formatTree(node);
       } else if (node.thread_id) {
-        this.#formatNotification(node, id);
+        this.#formatNotification(node);
       } else if (node.score !== undefined) {
-        this.#formatTopic(node, id);
+        this.#formatTopic(node);
+      } else if (node.git_status) {
+        this.#formatCodespace(node);
       }
     });
   }
@@ -652,6 +740,24 @@ class Interface {
         largetype: short_description || description,
         copy: name,
       },
+    });
+  }
+
+  #formatCodespace(codespace) {
+    let { name, state, repository, url, git_status, updated_at, last_used_at } = codespace;
+    this.Workflow.addItem({
+      title: `${repository}  ·  ⑂ ${git_status.ref}`,
+      subtitle: `${state}, last used ${datetimeFormat(last_used_at)}`,
+      arg: url,
+      icon: { path: "icons/codespace.png" },
+      variables: { execute: "open_link" },
+      mods: {
+        cmd: {
+          subtitle: "Open repository in browser",
+          arg: `${this.#Cache.baseUrl}/${repository}`,
+          icon: { path: "icons/repo.png" },
+        }
+      }
     });
   }
 

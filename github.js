@@ -42,6 +42,10 @@ class GitHub {
       'GET /search/topics',
       { q: "", per_page: 20 },
     ],
+    MY_CODESPACES: [
+      'GET /user/codespaces',
+      { per_page: 100 }
+    ]
   };
 
   static #GQL = GQL;
@@ -72,6 +76,8 @@ class GitHub {
         data = await Promise.all(data.map(d => this.#getNotifications(d)));
       } else if (["MY_GISTS", "MY_STARRED_GISTS"].includes(action)) {
         data = GitHub.#tidyGists(data);
+      } else if (action === "MY_CODESPACES") {
+        data = data.map(({ name, state, repository: {full_name: repository}, web_url: url, git_status, updated_at, last_used_at }) => ({ name, state, repository, url, git_status, updated_at, last_used_at }));
       }
     } else if (ACTION = GitHub.#GQL[action], ACTION) {
       for (let key in ACTION[1]) {

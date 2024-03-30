@@ -6,6 +6,7 @@ function matchStr(str) {
 }
 
 function convertSize(b) {
+  if (isNaN(b)) return "";
   for (let unit of ["", "K", "M", "G"]) {
     if (b < 1024.0) {
       return `${b.toFixed(1)} ${unit}B`;

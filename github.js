@@ -6,7 +6,7 @@ import { Octokit } from "@octokit/core";
 import { paginateRest } from "@octokit/plugin-paginate-rest";
 import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
 import fetch from "node-fetch";
-import * as GQL from './github-gql.js';
+import * as GQL from './graphql.js';
 import { Enum } from "./utils.js";
 
 const MyOctokit = Octokit.plugin(paginateRest, paginateGraphql);

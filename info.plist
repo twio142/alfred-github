@@ -95,7 +95,7 @@
 				<string>case $execute in
   open_link) open "$1";;
   copy)      echo -n "$1" | pbcopy &amp;&amp; afplay /System/Library/Sounds/Purr.aiff;;
-  action)    ~/bin/node ./interface.js;;
+  action)    ./interface.js;;
 esac</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
@@ -139,17 +139,17 @@ esac</string>
 				<key>runningsubtext</key>
 				<string>Loading results…</string>
 				<key>script</key>
-				<string>~/bin/node ./interface.js "$1"</string>
+				<string></string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
-				<string></string>
+				<string>interface.js</string>
 				<key>subtext</key>
 				<string></string>
 				<key>title</key>
 				<string>GitHub</string>
 				<key>type</key>
-				<integer>5</integer>
+				<integer>8</integer>
 				<key>withspace</key>
 				<true/>
 			</dict>
@@ -237,13 +237,13 @@ esac</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>~/bin/node ./interface.js "$1"</string>
+				<string></string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
-				<string></string>
+				<string>interface.js</string>
 				<key>type</key>
-				<integer>11</integer>
+				<integer>8</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -280,11 +280,11 @@ esac</string>
 				<key>runningsubtext</key>
 				<string>Loading results…</string>
 				<key>script</key>
-				<string>config=1 ~/bin/node ./interface.js "$1"</string>
+				<string>config=1 ./interface.js "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
-				<string>interface.js</string>
+				<string></string>
 				<key>subtext</key>
 				<string></string>
 				<key>title</key>

@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/local/bin/node
 "use strict";
 import Workflow from "./workflow.js";
 import Cache from "./cache.js";
@@ -756,6 +756,11 @@ class Interface {
           subtitle: "Open repository in browser",
           arg: `${this.#Cache.baseUrl}/${repository}`,
           icon: { path: "icons/repo.png" },
+        },
+        alt: {
+          subtitle: "Open codespace in VS Code",
+          arg: `${this.#Cache.baseUrl}/codespaces/${name}?editor=vscode`,
+          icon: { path: "icons/vscode.png" },
         }
       }
     });

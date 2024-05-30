@@ -39,16 +39,6 @@
 			</dict>
 			<dict>
 				<key>destinationuid</key>
-				<string>234E9FD8-6961-4E4F-9630-F18707F6020E</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>destinationuid</key>
 				<string>26D0E75E-8A09-4EAD-A790-AF34C1CBA9ED</string>
 				<key>modifiers</key>
 				<integer>0</integer>
@@ -56,6 +46,16 @@
 				<string></string>
 				<key>sourceoutputuid</key>
 				<string>52B39DED-D89E-43CF-9573-3B171EB32E63</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>234E9FD8-6961-4E4F-9630-F18707F6020E</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
 				<key>vitoclose</key>
 				<false/>
 			</dict>
@@ -96,6 +96,7 @@
   open_link) open "$1";;
   copy)      echo -n "$1" | pbcopy &amp;&amp; afplay /System/Library/Sounds/Purr.aiff;;
   action)    ./interface.js;;
+  command)   ./interface.js "$1";;
 esac</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>

@@ -1,3 +1,4 @@
+'use strict';
 import Database from "better-sqlite3";
 import { mkdirSync, writeFile, existsSync, unlinkSync } from "fs";
 import GitHub from "./github.js";

@@ -1,3 +1,4 @@
+'use strict';
 import { Enum } from "./utils.js";
 // X-Github-Next-Global-ID: 1
 

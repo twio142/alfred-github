@@ -11,11 +11,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@octokit/auth-oauth-user": "^4.0.1",
-    "@octokit/core": "^5.0.2",
-    "@octokit/plugin-paginate-graphql": "^4.0.0",
-    "@octokit/plugin-paginate-rest": "^9.1.5",
-    "he": "^1.2.0",
+    "@octokit/auth-oauth-user": "^5.1.1",
+    "@octokit/core": "^6.1.2",
+    "@octokit/plugin-paginate-graphql": "^5.2.2",
+    "@octokit/plugin-paginate-rest": "^11.3.0",
+    "better-sqlite3": "^10.0.0",
     "node-fetch": "^3.3.2"
   }
 }

@@ -8,7 +8,7 @@ You need a [personal access token](https://github.com/settings/tokens/new?descri
 
 ## Dependencies
 
-- `node` (developed and tested with v18)
+- `node`
 - `terminal-notifier`
 
 ---

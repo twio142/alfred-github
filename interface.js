@@ -26,7 +26,7 @@ class Interface {
 
   async run(query = "") {
     if (!this.#Cache.loggedIn) {
-      return this.logIn(query);
+      this.logIn(query);
     } else {
       this.#Cache.refreshInBackground();
     }
@@ -101,7 +101,7 @@ class Interface {
       if (this.#debug) console.error(7);
       this.myMenu();
       this.Workflow.filter(query.slice(1));
-    } else {
+    } else if (this.#Cache.loggedIn) {
       if (this.#debug) console.error(8);
       await this.mainMenu(query);
     }
@@ -478,14 +478,14 @@ class Interface {
 
   #formatRepo(repo, id) {
     let name = repo.nameWithOwner,
-      starred = repo.viewerHasStarred ? "★" : "",
-      watched = repo.viewerSubscription === "SUBSCRIBED" ? "🔔" : "";
+      starred = repo.viewerHasStarred ? "􀋂" : "",
+      watched = repo.viewerSubscription === "SUBSCRIBED" ? "􀋙" : "";
     let title = [name + " ", starred, watched].filter(Boolean).join(" ");
     let lang = repo.primaryLanguage?.name,
       stars = convertNum(repo.stargazerCount),
       updated = datetimeFormat(repo.updatedAt),
-      fork = repo.parent ? `⑂ ${repo.parent.nameWithOwner}` : "";
-    stars = stars ? `★ ${stars}` : "";
+      fork = repo.parent ? `􀙠 ${repo.parent.nameWithOwner}` : "";
+    stars = stars ? `􀋂 ${stars}` : "";
     let subtitle = [lang, stars, updated, fork].filter(Boolean).join(" · ");
     this.Workflow.addItem({
       title,
@@ -513,14 +513,14 @@ class Interface {
 
   #formatUser(user, id) {
     let name = `${user.login}${user.name ? `  (${user.name}) ` : ""}`,
-      followed = user.viewerIsFollowing ? "💗" : "",
-      verified = user.isVerified ? "🎖️" : "";
+      followed = user.viewerIsFollowing ? "􀋭" : "",
+      verified = user.isVerified ? "􀇺" : "";
     let title = [name, verified, followed].filter(Boolean).join(" ");
     let followers = convertNum(user.followers?.totalCount),
       repos = convertNum(user.repositories.totalCount);
     let subtitle = [
-      followers ? `👥 ${followers}` : "",
-      repos ? `📕 ${repos}` : "",
+      followers ? `􀉬 ${followers}` : "",
+      repos ? `􀤞 ${repos}` : "",
     ]
       .filter(Boolean)
       .join(" · ");
@@ -552,8 +552,8 @@ class Interface {
 
   #formatGist(gist) {
     let name = `${gist.owner}/${gist.files[0].name}`;
-    let title = `${name}  ${gist.public ? "" : "🔒"}`;
-    let subtitle = `📄 ${gist.files.length} · ${datetimeFormat(
+    let title = `${name}  ${gist.public ? "" : "􀎡"}`;
+    let subtitle = `􀈷 ${gist.files.length} · ${datetimeFormat(
       gist.updatedAt
     )}`;
     this.Workflow.addItem({
@@ -572,8 +572,8 @@ class Interface {
   }
 
   #formatList(list, id) {
-    let title = `${list.name}  ${list.isPrivate ? "🔒" : ""}`;
-    let subtitle = `📦 ${list.items.totalCount}`;
+    let title = `${list.name}  ${list.isPrivate ? "􀎡" : ""}`;
+    let subtitle = `${list.items.totalCount} repo${list.items.totalCount > 1 ? "s" : ""}`;
     this.Workflow.addItem({
       title,
       subtitle,
@@ -596,14 +596,14 @@ class Interface {
   }
 
   #formatIssue(issue) {
-    let title = `${issue.title}  ${issue.viewerSubscription === "SUBSCRIBED" ? "🔔" : ""
+    let title = `${issue.title}  ${issue.viewerSubscription === "SUBSCRIBED" ? "􀋙" : ""
       }`;
     let comments = convertNum(issue.comments.totalCount),
       updated = datetimeFormat(issue.updatedAt);
     let subtitle = [
       `${issue.repository.nameWithOwner} #${issue.number}`,
       updated,
-      comments ? `💬 ${comments}` : "",
+      comments ? `􀕺 ${comments}` : "",
     ]
       .filter(Boolean)
       .join(" · ");
@@ -628,12 +628,12 @@ class Interface {
   #formatRelease(release, id) {
     let tag =
       release.tagName && release.tagName !== release.name
-        ? ` (🏷️ ${release.tagName})`
+        ? ` (􀋡 ${release.tagName})`
         : "";
     let title = `${release.name}${tag}  ${release.isPrerelease ? "🚧" : ""
       }`;
     let assets = release.releaseAssets.totalCount
-      ? `📦 ${release.releaseAssets.totalCount}`
+      ? `􀐚 ${release.releaseAssets.totalCount}`
       : "";
     let subtitle = [datetimeFormat(release.publishedAt), assets]
       .filter(Boolean)
@@ -668,7 +668,7 @@ class Interface {
   #formatAsset(asset) {
     let title = asset.name;
     let subtitle = [
-      asset.downloadCount ? `📥 ${asset.downloadCount}` : "",
+      asset.downloadCount ? `􀈄 ${asset.downloadCount}` : "",
       convertSize(asset.size),
     ]
       .filter(Boolean)
@@ -706,7 +706,7 @@ class Interface {
 
   #formatNotification(notification) {
     let { title, url, repo, updated_at, tag, thread_id } = notification;
-    tag = tag ? ` #${tag}` : "";
+    tag = tag ? ` 􀆃${tag}` : "";
     this.Workflow.addItem({
       title,
       subtitle: `${repo}${tag} ${datetimeFormat(updated_at)}`,
@@ -746,7 +746,7 @@ class Interface {
   #formatCodespace(codespace) {
     let { name, state, repository, url, git_status, updated_at, last_used_at } = codespace;
     this.Workflow.addItem({
-      title: `${repository}  ·  ⑂ ${git_status.ref}`,
+      title: `${repository}  ·  􀙠 ${git_status.ref}`,
       subtitle: `${state}, last used ${datetimeFormat(last_used_at)}`,
       arg: url,
       icon: { path: "icons/codespace.png" },
@@ -891,6 +891,7 @@ class Interface {
     this.Workflow.addItem({
       title: "Tree",
       icon: { path: "icons/tree.png" },
+      quicklookurl: `${repo.url}?search=1`,
       match: "tree",
       variables: {
         action: "REPO_TREE",
@@ -1044,18 +1045,19 @@ class Interface {
   }
 
   logIn(query) {
+    this.#prevId = null;
     const { accessToken, baseUrl } = this.#Cache;
     this.Workflow.addItem({
       title: `Set Personal Access Token${query ? `: ${query}` : ""}`,
-      subtitle: `Current: ${accessToken ? "＊＊＊＊＊＊" : ""}`,
+      subtitle: accessToken ? "Current: ＊＊＊＊＊＊" : "",
       arg: query,
       valid: !!query,
       icon: { path: "icons/login.png" },
-      variables: { command: "set_access_token" },
+      variables: { execute: "command", command: "set_access_token" },
       mods: {
         cmd: {
           subtitle: "Delete token",
-          variables: { command: "del_access_token" },
+          variables: { execute: "command", command: "del_access_token" },
           icon: { path: "icons/delete.png" },
         },
       },
@@ -1063,15 +1065,15 @@ class Interface {
     if (this.#enterprise) {
       this.Workflow.addItem({
         title: `Set Enterprise URL${query ? `: ${query}` : ""}`,
-        subtitle: `Current: ${baseUrl || ""}`,
+        subtitle: baseUrl ? `Current: ${baseUrl}` : "",
         arg: query,
         valid: !!query,
         icon: { path: "icons/login.png" },
-        variables: { command: "set_enterprise_url" },
+        variables: { execute: "command", command: "set_enterprise_url" },
         mods: {
           cmd: {
             subtitle: "Delete enterprise URL",
-            variables: { command: "del_enterprise_url" },
+            variables: { execute: "command", command: "del_enterprise_url" },
             icon: { path: "icons/delete.png" },
           },
         },
@@ -1084,7 +1086,7 @@ class Interface {
     this.Workflow.addItem({
       title: "Clear Cache",
       icon: { path: "icons/clear_cache.png" },
-      variables: { command: "clear_cache" },
+      variables: { execute: "command", command: "clear_cache" },
     });
     this.logIn(query);
   }

@@ -126,9 +126,9 @@ esac</string>
 				<key>argumenttype</key>
 				<integer>1</integer>
 				<key>escaping</key>
-				<integer>102</integer>
+				<integer>0</integer>
 				<key>keyword</key>
-				<string>gh</string>
+				<string>{var:keyword}</string>
 				<key>queuedelaycustom</key>
 				<integer>3</integer>
 				<key>queuedelayimmediatelyinitially</key>
@@ -269,7 +269,7 @@ esac</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>keyword</key>
-				<string>|gh</string>
+				<string>|{var:keyword}</string>
 				<key>queuedelaycustom</key>
 				<integer>3</integer>
 				<key>queuedelayimmediatelyinitially</key>
@@ -289,7 +289,7 @@ esac</string>
 				<key>subtext</key>
 				<string></string>
 				<key>title</key>
-				<string>GitHub</string>
+				<string>GitHub Workflow Configuration</string>
 				<key>type</key>
 				<integer>5</integer>
 				<key>withspace</key>
@@ -304,7 +304,24 @@ esac</string>
 		</dict>
 	</array>
 	<key>readme</key>
-	<string></string>
+	<string># GitHub Workflow
+
+An Alfred workflow to search on GitHub and manage your resources.
+
+Written in Node.js. Uses GitHub's graphQL and REST API and stores cache in a sqlite database.
+
+You need a [personal access token](https://github.com/settings/tokens/new?description=alfred-workflow&amp;scopes=repo,read:org,read:enterprise,gist,notifications,user,codespace) to log in.
+
+### Dependencies
+
+- `node` (developed and tested with v18)
+- `terminal-notifier`
+
+---
+
+Inspired by and developed on the basis of [gharlan/alfred-github-workflow](https://github.com/gharlan/alfred-github-workflow).
+
+Thank you gharlan!</string>
 	<key>uidata</key>
 	<dict>
 		<key>234E9FD8-6961-4E4F-9630-F18707F6020E</key>
@@ -362,7 +379,48 @@ esac</string>
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>
-	<array/>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>gh</string>
+				<key>placeholder</key>
+				<string>gh</string>
+				<key>required</key>
+				<true/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string></string>
+			<key>label</key>
+			<string>Keyword</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>keyword</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<false/>
+				<key>required</key>
+				<false/>
+				<key>text</key>
+				<string>GitHub Enterprise</string>
+			</dict>
+			<key>description</key>
+			<string></string>
+			<key>label</key>
+			<string>Use</string>
+			<key>type</key>
+			<string>checkbox</string>
+			<key>variable</key>
+			<string>enterprise</string>
+		</dict>
+	</array>
 	<key>version</key>
 	<string>1.0.0</string>
 	<key>webaddress</key>

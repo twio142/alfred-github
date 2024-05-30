@@ -1,4 +1,4 @@
-#!/usr/local/bin/node
+#!/usr/bin/env node
 "use strict";
 import Workflow from "./workflow.js";
 import Cache from "./cache.js";

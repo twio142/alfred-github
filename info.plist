@@ -95,8 +95,8 @@
 				<string>case $execute in
   open_link) open "$1";;
   copy)      echo -n "$1" | pbcopy &amp;&amp; afplay /System/Library/Sounds/Purr.aiff;;
-  action)    ./interface.js;;
-  command)   ./interface.js "$1";;
+  action)    ./src/interface.js;;
+  command)   ./src/interface.js "$1";;
 esac</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
@@ -144,7 +144,7 @@ esac</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
-				<string>interface.js</string>
+				<string>src/interface.js</string>
 				<key>subtext</key>
 				<string></string>
 				<key>title</key>
@@ -236,13 +236,13 @@ esac</string>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
-				<integer>102</integer>
+				<integer>0</integer>
 				<key>script</key>
 				<string></string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
-				<string>interface.js</string>
+				<string>src/interface.js</string>
 				<key>type</key>
 				<integer>8</integer>
 			</dict>
@@ -281,7 +281,7 @@ esac</string>
 				<key>runningsubtext</key>
 				<string>Loading results…</string>
 				<key>script</key>
-				<string>config=1 ./interface.js "$1"</string>
+				<string>config=1 ./src/interface.js "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -314,7 +314,7 @@ You need a [personal access token](https://github.com/settings/tokens/new?descri
 
 ### Dependencies
 
-- `node` (developed and tested with v18)
+- `node`
 - `terminal-notifier`
 
 ---

@@ -14,7 +14,7 @@ import { fileURLToPath } from "url";
 class Interface {
   Workflow;
   #Cache;
-  #enterprise = !!process.env.enterprise;
+  #enterprise = process.env.enterprise == 1;
   #prevId = "main";
   #prevNodeId;
   #debug = !!process.env.alfred_debug;

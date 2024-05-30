@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 class Cache {
   static #dbFile = `${process.env.alfred_workflow_data}/cache.db`;
   #db;
-  #enterprise = !!process.env.enterprise;
+  #enterprise = process.env.enterprise == 1;
   #accessToken = () =>
     this.#db
       .prepare("SELECT value FROM configs WHERE key = 'accessToken'")

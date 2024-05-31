@@ -341,6 +341,31 @@ class Cache {
     }
   }
 
+  get gistUrl() {
+    return this.#enterprise
+      ? this.#db
+        .prepare(
+          "SELECT value FROM configs WHERE key = 'gistUrl'"
+        )
+        .get()
+      ?.value
+      : "https://gist.github.com";
+  }
+
+  set gistUrl(url) {
+    if (this.#enterprise) {
+      this.#db
+        .prepare(
+          `
+    INSERT INTO configs (key, value)
+    VALUES ('gistUrl', ?)
+    ON CONFLICT DO UPDATE SET value = ?;
+    `
+        )
+        .run(url, url);
+    }
+  }
+
   get username() {
     return this.#username();
   }

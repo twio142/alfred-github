@@ -121,7 +121,7 @@ class Interface {
   myMenu() {
     this.#prevId = null;
     this.#prevNodeId = null;
-    const { baseUrl, username } = this.#Cache;
+    const { baseUrl, gistUrl, username } = this.#Cache;
     this.Workflow.addItem({
       title: "My Repos",
       icon: { path: "icons/repo.png" },
@@ -197,7 +197,7 @@ class Interface {
       mods: {
         shift: {
           subtitle: "Open in browser",
-          arg: `${baseUrl}/gist${username}`,
+          arg: `${gistUrl}/${username}`,
           variables: { execute: "open_link" },
         },
       }
@@ -213,7 +213,7 @@ class Interface {
       mods: {
         shift: {
           subtitle: "Open in browser",
-          arg: `${baseUrl}/gist${username}/starred`,
+          arg: `${gistUrl}/${username}/starred`,
           variables: { execute: "open_link" },
         },
       }
@@ -1029,6 +1029,14 @@ class Interface {
         this.#Cache.baseUrl = "";
         notify("Enterprise URL deleted");
         break;
+      case "set_gist_url":
+        this.#Cache.gistUrl = query;
+        notify("Gist URL set", query);
+        break;
+      case "del_gist_url":
+        this.#Cache.gistUrl = "";
+        notify("Gist URL deleted");
+        break;
       case "set_access_token":
         this.#Cache.accessToken = query;
         notify("Personal Access Token set");
@@ -1046,7 +1054,7 @@ class Interface {
 
   logIn(query) {
     this.#prevId = null;
-    const { accessToken, baseUrl } = this.#Cache;
+    const { accessToken, baseUrl, gistUrl } = this.#Cache;
     this.Workflow.addItem({
       title: `Set Personal Access Token${query ? `: ${query}` : ""}`,
       subtitle: accessToken ? "Current: ＊＊＊＊＊＊" : "",
@@ -1068,12 +1076,27 @@ class Interface {
         subtitle: baseUrl ? `Current: ${baseUrl}` : "",
         arg: query,
         valid: !!query,
-        icon: { path: "icons/login.png" },
+        icon: { path: "icon.png" },
         variables: { execute: "command", command: "set_enterprise_url" },
         mods: {
           cmd: {
             subtitle: "Delete enterprise URL",
             variables: { execute: "command", command: "del_enterprise_url" },
+            icon: { path: "icons/delete.png" },
+          },
+        },
+      });
+      this.Workflow.addItem({
+        title: `Set Gist URL${query ? `: ${query}` : ""}`,
+        subtitle: gistUrl ? `Current: ${gistUrl}` : "",
+        arg: query,
+        valid: !!query,
+        icon: { path: "icons/gist.png" },
+        variables: { execute: "command", command: "set_gist_url" },
+        mods: {
+          cmd: {
+            subtitle: "Delete gist URL",
+            variables: { execute: "command", command: "del_gist_url" },
             icon: { path: "icons/delete.png" },
           },
         },

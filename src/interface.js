@@ -2,6 +2,7 @@
 "use strict";
 import Workflow from "./workflow.js";
 import Cache from "./cache.js";
+import { realpathSync } from "fs";
 import {
   datetimeFormat,
   convertNum,
@@ -1153,6 +1154,6 @@ class Interface {
 
 export default Interface;
 
-if (fileURLToPath(import.meta.url) === process.argv[1]) {
+if (fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
   new Interface().run(process.argv[2]?.trim());
 }

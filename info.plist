@@ -126,7 +126,7 @@ esac</string>
 				<key>argumenttype</key>
 				<integer>1</integer>
 				<key>escaping</key>
-				<integer>0</integer>
+				<integer>102</integer>
 				<key>keyword</key>
 				<string>{var:keyword}</string>
 				<key>queuedelaycustom</key>

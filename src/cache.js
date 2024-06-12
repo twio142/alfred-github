@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 'use strict';
 import Database from "better-sqlite3";
 import { mkdirSync, writeFile, existsSync, unlinkSync } from "fs";
@@ -214,19 +215,23 @@ class Cache {
   #cacheInBackground(action = "", options = {}, id = "") {
     if (!this.#loggedIn()) return;
     const child = spawn(
-      process.execPath,
-      [fileURLToPath(import.meta.url), action, JSON.stringify(options), String(id)],
+      fileURLToPath(import.meta.url),
+      [action, JSON.stringify(options), String(id)],
       {
         detached: true,
         stdio: "ignore",
+        env: process.env,
       }
     );
+    if (action) {
+      child.unref();
+      return;
+    }
     writeFile(
       `${process.env.alfred_workflow_cache}/pid`,
       String(child.pid),
-      () => { }
+      () => child.unref()
     );
-    child.unref();
   }
 
   refreshInBackground() {

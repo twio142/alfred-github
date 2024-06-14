@@ -22,7 +22,7 @@ class Workflow {
       title,
       subtitle,
       valid: false,
-      icon: { path: '../../resources/AlertCautionIcon.icns' }
+      icon: { path: `${process.env.alfred_preferences || '../..'}/resources/AlertCautionIcon.icns` }
     }];
   }
 

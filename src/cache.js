@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 import Database from "better-sqlite3";
-import { mkdirSync, writeFile, existsSync, unlinkSync } from "fs";
+import { mkdirSync, writeFile, existsSync, unlinkSync, realpathSync } from "fs";
 import GitHub from "./github.js";
 import { spawn } from "child_process";
 import { fileURLToPath } from 'url';
@@ -378,7 +378,7 @@ class Cache {
 
 export default Cache;
 
-if (fileURLToPath(import.meta.url) === process.argv[1]) {
+if (fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
   let cache = new Cache();
   if (process.argv[2]) {
     cache.clearCache();

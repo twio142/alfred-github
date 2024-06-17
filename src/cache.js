@@ -381,16 +381,15 @@ export default Cache;
 if (fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
   let cache = new Cache();
   if (process.argv[2]) {
-    cache.clearCache();
     cache.requestAPI(
       process.argv[2],
       JSON.parse(process.argv[3]),
       process.argv[4]
-    );
+    ).then(() => cache.clearCache());
   } else {
-    cache.clearCache();
     cache
       .refresh()
+      .then(() => cache.clearCache())
       .then(() => unlinkSync(`${process.env.alfred_workflow_cache}/pid`));
   }
 }

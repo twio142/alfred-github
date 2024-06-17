@@ -962,7 +962,7 @@ class Interface {
       title: `${user.login}${user.name ? `  (${user.name}) ` : ""}`,
       subtitle: "Open in browser",
       icon: {
-        path: `icons/${user.id.startsWith("U") ? "user" : "org"}.png`,
+        path: `icons/${user.id.startsWith("U") ? "user" : "organization"}.png`,
       },
       text: {
         largetype: user.bio || user.description,

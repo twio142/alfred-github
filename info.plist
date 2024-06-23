@@ -12,7 +12,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>2ED7E6E0-9784-4386-BA6F-504D174294C5</string>
+				<string>72BCBA75-6C0A-4DCF-9F89-897F23205312</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -27,31 +27,29 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>72BCBA75-6C0A-4DCF-9F89-897F23205312</string>
+				<string>234E9FD8-6961-4E4F-9630-F18707F6020E</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
 				<string></string>
 				<key>sourceoutputuid</key>
 				<string>52B39DED-D89E-43CF-9573-3B171EB32E63</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>72BCBA75-6C0A-4DCF-9F89-897F23205312</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
 				<key>vitoclose</key>
 				<false/>
 			</dict>
 			<dict>
 				<key>destinationuid</key>
 				<string>26D0E75E-8A09-4EAD-A790-AF34C1CBA9ED</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>sourceoutputuid</key>
-				<string>52B39DED-D89E-43CF-9573-3B171EB32E63</string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>destinationuid</key>
-				<string>234E9FD8-6961-4E4F-9630-F18707F6020E</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -84,34 +82,6 @@
 	<string>GitHub</string>
 	<key>objects</key>
 	<array>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>concurrently</key>
-				<false/>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>script</key>
-				<string>case $execute in
-  open_link) open "$1";;
-  copy)      echo -n "$1" | pbcopy &amp;&amp; afplay /System/Library/Sounds/Purr.aiff;;
-  action)    ./src/interface.js;;
-  command)   ./src/interface.js "$1";;
-esac</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>type</key>
-				<integer>11</integer>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.script</string>
-			<key>uid</key>
-			<string>72BCBA75-6C0A-4DCF-9F89-897F23205312</string>
-			<key>version</key>
-			<integer>2</integer>
-		</dict>
 		<dict>
 			<key>config</key>
 			<dict>
@@ -188,19 +158,6 @@ esac</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>unstackview</key>
-				<false/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.hidealfred</string>
-			<key>uid</key>
-			<string>26D0E75E-8A09-4EAD-A790-AF34C1CBA9ED</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>conditions</key>
 				<array>
 					<dict>
@@ -209,17 +166,17 @@ esac</string>
 						<key>matchcasesensitive</key>
 						<false/>
 						<key>matchmode</key>
-						<integer>1</integer>
+						<integer>0</integer>
 						<key>matchstring</key>
 						<string></string>
 						<key>outputlabel</key>
-						<string>→</string>
+						<string>←</string>
 						<key>uid</key>
 						<string>52B39DED-D89E-43CF-9573-3B171EB32E63</string>
 					</dict>
 				</array>
 				<key>elselabel</key>
-				<string>←</string>
+				<string>→</string>
 				<key>hideelse</key>
 				<false/>
 			</dict>
@@ -236,20 +193,27 @@ esac</string>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
-				<integer>0</integer>
+				<integer>102</integer>
 				<key>script</key>
-				<string></string>
+				<string>case $execute in
+  open_link) open "$@";;
+  copy)      echo -n "$@" | pbcopy &amp;&amp; afplay /System/Library/Sounds/Purr.aiff;;
+  action)    ./src/interface.js;;
+  command)   ./src/interface.js "$1";;
+esac
+
+./src/cache.js clear</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
-				<string>src/interface.js</string>
+				<string></string>
 				<key>type</key>
-				<integer>8</integer>
+				<integer>11</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
 			<key>uid</key>
-			<string>2ED7E6E0-9784-4386-BA6F-504D174294C5</string>
+			<string>72BCBA75-6C0A-4DCF-9F89-897F23205312</string>
 			<key>version</key>
 			<integer>2</integer>
 		</dict>
@@ -302,6 +266,19 @@ esac</string>
 			<key>version</key>
 			<integer>3</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>unstackview</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.hidealfred</string>
+			<key>uid</key>
+			<string>26D0E75E-8A09-4EAD-A790-AF34C1CBA9ED</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string># GitHub Workflow
@@ -327,16 +304,16 @@ Thank you gharlan!</string>
 		<key>234E9FD8-6961-4E4F-9630-F18707F6020E</key>
 		<dict>
 			<key>xpos</key>
-			<real>355</real>
+			<real>265</real>
 			<key>ypos</key>
-			<real>55</real>
+			<real>40</real>
 		</dict>
 		<key>26D0E75E-8A09-4EAD-A790-AF34C1CBA9ED</key>
 		<dict>
 			<key>xpos</key>
-			<real>230</real>
+			<real>265</real>
 			<key>ypos</key>
-			<real>55</real>
+			<real>175</real>
 		</dict>
 		<key>2CC5C677-A7FE-47BC-9C14-C25853574AAC</key>
 		<dict>
@@ -347,19 +324,12 @@ Thank you gharlan!</string>
 			<key>ypos</key>
 			<real>145</real>
 		</dict>
-		<key>2ED7E6E0-9784-4386-BA6F-504D174294C5</key>
-		<dict>
-			<key>xpos</key>
-			<real>230</real>
-			<key>ypos</key>
-			<real>145</real>
-		</dict>
 		<key>72BCBA75-6C0A-4DCF-9F89-897F23205312</key>
 		<dict>
 			<key>xpos</key>
-			<real>230</real>
+			<real>265</real>
 			<key>ypos</key>
-			<real>25</real>
+			<real>145</real>
 		</dict>
 		<key>86A72462-DA1D-4E38-BCE5-DF6FA842E5C8</key>
 		<dict>

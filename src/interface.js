@@ -562,11 +562,13 @@ class Interface {
       subtitle,
       arg: gist.url,
       icon: { path: `icons/gist.png` },
+      variables: { execute: "open_link" },
       match: matchStr(name),
       text: {
         largetype: gist.description,
       },
       mods: {
+        cmd: { subtitle: "Copy raw URL(s)", arg: gist.files.map((f) => f.url), variables: { execute: "copy" } },
         alt: { subtitle: gist.description || "", valid: !1 },
       },
     });

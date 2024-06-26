@@ -340,7 +340,7 @@ class Interface {
     (await Promise.all(promises))
       .map((p) => p.data?.map(node => ({ ...node, prevId: p.id })) || [])
       .flat()
-      .map((node) => (node.id.startsWith("R_") ? node : node.repository))
+      .map((node) => (node.id.startsWith("R_") ? node : {...node.repository, prevId: node.prevId}))
       .forEach(
         (node) =>
           repos.find((n) => n.id === node.id) || repos.push(node)

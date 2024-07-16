@@ -253,7 +253,7 @@ class Interface {
     });
     this.Workflow.addItem({
       title: "My Pull Requests",
-      icon: { path: "icons/pr.png" },
+      icon: { path: "icons/pullRequest.png" },
       match: "prs pull requests",
       variables: {
         action: "MY_PRS",
@@ -610,7 +610,7 @@ class Interface {
     ]
       .filter(Boolean)
       .join(" · ");
-    let icon = `icons/${issue.id.startsWith("I") ? "issue" : "pr"}_${issue.state
+    let icon = `icons/${issue.id.startsWith("I") ? "issue" : "pullRequest"}_${issue.state
       .toLowerCase()}.png`;
     this.Workflow.addItem({
       title,
@@ -708,14 +708,15 @@ class Interface {
   }
 
   #formatNotification(notification) {
-    let { title, url, repo, updated_at, tag, thread_id } = notification;
-    tag = tag ? ` 􀆃${tag}` : "";
+    let { title, url, repo, updated_at, tag, thread_id, type, state } = notification;
+    tag = tag ? `  􀆃${tag}` : "";
+    let icon = ["Issue", "PullRequest"].includes(type) ? `${type.toLowerCase()}_${state}` : type.toLowerCase();
     this.Workflow.addItem({
       title,
-      subtitle: `${repo}${tag} ${datetimeFormat(updated_at)}`,
+      subtitle: `${repo}${tag}  􁙜 ${datetimeFormat(updated_at)}`,
       arg: url,
       match: matchStr(title, repo),
-      icon: { path: `icons/notification.png` },
+      icon: { path: `icons/${icon}.png` },
       variables: { execute: "open_link" },
       mods: {
         cmd: {
@@ -727,6 +728,15 @@ class Interface {
           },
           icon: { path: "icons/unseen.png" },
         },
+        alt: {
+          subtitle: "Unsubscribe",
+          variables: {
+            execute: "action",
+            action: "UNSUBSCRIBE_NOTIFICATION",
+            options: JSON.stringify({ thread_id }),
+          },
+          icon: { path: "icons/unsubscribe.png" },
+        }
       },
     });
   }
@@ -861,7 +871,7 @@ class Interface {
         title: "Pull Requests",
         subtitle: `${repo.pullRequests.totalCount} pull request${repo.pullRequests.totalCount > 1 ? "s" : ""
           }`,
-        icon: { path: "icons/pr.png" },
+        icon: { path: "icons/pullRequest.png" },
         match: "prs pull requests",
         quicklookurl: `${repo.url}/pulls`,
         variables: {

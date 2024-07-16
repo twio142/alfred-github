@@ -14,8 +14,8 @@
     "@octokit/auth-oauth-user": "^5.1.1",
     "@octokit/core": "^6.1.2",
     "@octokit/plugin-paginate-graphql": "^5.2.2",
-    "@octokit/plugin-paginate-rest": "^11.3.0",
-    "better-sqlite3": "^11.0.0",
+    "@octokit/plugin-paginate-rest": "^11.3.3",
+    "better-sqlite3": "^11.1.2",
     "node-fetch": "^3.3.2"
   }
 }

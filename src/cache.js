@@ -108,9 +108,9 @@ class Cache {
     if (Cache.noCacheActions.includes(action)) {
       return { data };
     } else if (data) {
-      id = this.#cacheData(action, options, data, id, prevId, prevNodeId);
       // if (action === 'ME')
       //   this.#cacheMyAvatar(data.avatarUrl);
+      id = this.#cacheData(action, options, data, id, prevId, prevNodeId);
       return { data, id };
     } else {
       return {};
@@ -245,6 +245,7 @@ class Cache {
     "FOLLOW",
     "UNFOLLOW",
     "MARK_NOTIFICATION_AS_READ",
+    "UNSUBSCRIBE_NOTIFICATION",
   ];
 
   static myRelatedRepos = [

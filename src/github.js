@@ -27,7 +27,11 @@ class GitHub {
       // all (also show those marked as read): true / false (*)
     ],
     MARK_NOTIFICATION_AS_READ: [
-      'PUT /notifications',
+      'PATCH /notifications/threads/{thread_id}',
+      { thread_id: "" },
+    ],
+    UNSUBSCRIBE_NOTIFICATION: [
+      'DELETE /notifications/threads/{thread_id}/subscription',
       { thread_id: "" },
     ],
     MY_GISTS: [
@@ -117,34 +121,28 @@ class GitHub {
       unread,
     } = data;
     let html_url, state, tag;
-    if (!latest_comment_url) {
-      html_url = data.repository.html_url;
-    } else {
-      let { data: subject } = await this.#Octokit.request(
-        `GET ${latest_comment_url.replace(
-          "https://api.github.com",
-          ""
-        )}`
-      );
-      html_url = subject.html_url;
-      if (url != latest_comment_url) {
-        subject = (
-          await this.#Octokit.request(
-            `GET ${url.replace("https://api.github.com", "")}`
-          )
-        ).data;
-      }
-      if (type == "PullRequest") {
-        state = subject.merged_at ? "merged" : subject.state;
-        tag = subject.number;
-      } else if (type == "Issue") {
-        state = subject.state;
-        tag = subject.number;
-      } else if (type == "Release") {
-        tag = subject.tag_name;
-      } else if (type == "Discussion") {
-        tag = subject.number;
-      }
+    latest_comment_url = latest_comment_url || url;
+    let { data: subject } = await this.#Octokit.request(
+      `GET ${new URL(latest_comment_url).pathname}`
+    );
+    html_url = subject.html_url;
+    if (url != latest_comment_url) {
+      subject = (
+        await this.#Octokit.request(
+          `GET ${new URL(url).pathname}`
+        )
+      ).data;
+    }
+    if (type == "PullRequest") {
+      state = subject.merged_at ? "merged" : subject.state;
+      tag = subject.number;
+    } else if (type == "Issue") {
+      state = subject.state;
+      tag = subject.number;
+    } else if (type == "Release") {
+      tag = subject.tag_name;
+    } else if (type == "Discussion") {
+      tag = subject.number;
     }
     return {
       reason,

@@ -120,18 +120,27 @@ class GitHub {
       updated_at,
       unread,
     } = data;
-    let html_url, state, tag;
+    let html_url, state, tag, subject = data.subject;
     latest_comment_url = latest_comment_url || url;
-    let { data: subject } = await this.#Octokit.request(
-      `GET ${new URL(latest_comment_url).pathname}`
-    );
+    if (latest_comment_url) {
+      subject = (await this.#Octokit.request(
+        `GET ${new URL(latest_comment_url).pathname}`
+      )).data;
+    }
     html_url = subject.html_url;
-    if (url != latest_comment_url) {
+    if (url && url != latest_comment_url) {
       subject = (
         await this.#Octokit.request(
           `GET ${new URL(url).pathname}`
         )
       ).data;
+    }
+    if (!html_url) {
+      html_url = (await this.#Octokit.request(
+        `GET ${new URL(data.repository.url).pathname}`
+      )).data.html_url;
+      if (type == "Discussion")
+        html_url += `/discussions`;
     }
     if (type == "PullRequest") {
       state = subject.merged_at ? "merged" : subject.state;

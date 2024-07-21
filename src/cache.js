@@ -38,6 +38,7 @@ class Cache {
     if (!process.env.alfred_workflow_data)
       throw new Error("`alfred_workflow_data` not available.");
     mkdirSync(process.env.alfred_workflow_data, { recursive: true });
+    mkdirSync(process.env.alfred_workflow_cache, { recursive: true });
     this.#db = new Database(Cache.#dbFile);
     this.#db.exec(`
     CREATE TABLE IF NOT EXISTS cache (
@@ -81,8 +82,8 @@ class Cache {
    */
   async request(action, options = {}, forceRefresh = !1, prevId, prevNodeId) {
     let row = this.#requestCache(action, options);
-    if (row.data) {
-      if (forceRefresh || !row.fresh) {
+    if (row.data && !forceRefresh) {
+      if (!row.fresh) {
         this.#cacheInBackground(action, options, row.id);
       }
       return { data: row.data, id: row.id };

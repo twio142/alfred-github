@@ -173,7 +173,7 @@ class Interface {
     });
     this.Workflow.addItem({
       title: "My Watching Repos",
-      icon: { path: "icons/watching.png" },
+      icon: { path: "icons/repo_watch.png" },
       match: "watching",
       variables: {
         action: "MY_WATCHING",

@@ -17,5 +17,8 @@
     "@octokit/plugin-paginate-rest": "^11.3.3",
     "better-sqlite3": "^11.1.2",
     "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "eslint-formatter-compact": "^8.40.0"
   }
 }

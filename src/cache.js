@@ -393,6 +393,6 @@ if (fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
   } else {
     cache
       .refresh()
-      .then(() => unlinkSync(`${process.env.alfred_workflow_cache}/pid`));
+      .finally(() => unlinkSync(`${process.env.alfred_workflow_cache}/pid`));
   }
 }

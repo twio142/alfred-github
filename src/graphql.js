@@ -48,7 +48,7 @@ const USER_REPOS = [
   }
   ${QUERY_REPO}
   fragment getRepos on RepositoryOwner {
-    repositories(first: 100, after: $cursor) {
+    repositories(first: 100, after: $cursor, orderBy: {field: STARGAZERS, direction: DESC}) {
       nodes {
         ...queryRepo
       }
@@ -131,7 +131,7 @@ const REPO_ISSUES = [
   `
   query RepoIssues($owner: String!, $name: String!, $cursor: String) {
     repository(owner: $owner, name: $name) {
-      issues(states: [OPEN], first: 100, orderBy: {field: UPDATED_AT, direction: DESC}, after: $cursor) {
+      issues(states: [OPEN], first: 100, orderBy: {field: CREATED_AT, direction: DESC}, after: $cursor) {
         nodes {
           ...queryIssue
         }
@@ -187,7 +187,7 @@ const REPO_PRS = [
       pullRequests(
         first: 100
         states: [OPEN]
-        orderBy: {field: UPDATED_AT, direction: DESC}
+        orderBy: {field: CREATED_AT, direction: DESC}
         after: $cursor
       ) {
         nodes {
@@ -214,7 +214,7 @@ const REPO_RELEASES = [
   `
   query RepoReleases($owner: String!, $name: String!) {
     repository(owner: $owner, name: $name) {
-      releases(first: 10) {
+      releases(first: 10, orderBy: {field: CREATED_AT, direction: DESC}) {
         nodes {
           name
           publishedAt
@@ -347,7 +347,7 @@ const MY_REPOS = [
   }
   ${QUERY_REPO}
   fragment getRepos on RepositoryOwner {
-    repositories(first: 100, after: $cursor) {
+    repositories(first: 100, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
       nodes {
         ...queryRepo
       }
@@ -367,7 +367,7 @@ const MY_WATCHING = [
   `
   query MyWatching($cursor: String) {
     viewer {
-      watching(first: 100, after: $cursor) {
+      watching(first: 100, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
         nodes {
           ...queryRepo
         }
@@ -388,7 +388,7 @@ const MY_WATCHING = [
 const MY_STARS = [`
   query MyStars($cursor: String) {
     viewer {
-      starredRepositories(first: 100, after: $cursor) {
+      starredRepositories(first: 100, after: $cursor, orderBy: {field: STARRED_AT, direction: DESC}) {
         nodes {
           ...queryRepo
         }

@@ -284,6 +284,22 @@ class Interface {
       }
     });
     this.Workflow.addItem({
+      title: "My Projects",
+      icon: { path: "icons/project.png" },
+      match: "projects",
+      variables: {
+        action: "MY_PROJECTS",
+        options: JSON.stringify({ multiPages: true }),
+      },
+      mods: {
+        shift: {
+          subtitle: "Open in browser",
+          arg: `${baseUrl}/${username}?tab=projects`,
+          variables: { execute: "open_link" },
+        },
+      }
+    });
+    this.Workflow.addItem({
       title: "My Codespaces",
       icon: { path: "icons/codespace.png" },
       match: "codespaces",
@@ -461,6 +477,7 @@ class Interface {
       PR: this.#formatIssue,
       RE: this.#formatRelease,
       RA: this.#formatAsset,
+      PVT: this.#formatProject,
     };
     nodes.forEach((node) => {
       if (node.id?.split("_")[0] in lookUp) {
@@ -554,7 +571,7 @@ class Interface {
   #formatGist(gist) {
     let name = `${gist.owner}/${gist.files[0].name}`;
     let title = `${name}  ${gist.public ? "" : "􀎡"}`;
-    let subtitle = `􀈷 ${gist.files.length} · ${datetimeFormat(
+    let subtitle = `􀈷 ${gist.files.length} · 􀣔 ${datetimeFormat(
       gist.updatedAt
     )}`;
     this.Workflow.addItem({
@@ -757,10 +774,10 @@ class Interface {
   }
 
   #formatCodespace(codespace) {
-    let { name, state, repository, url, git_status, updated_at, last_used_at } = codespace;
+    let { name, state, repository, url, git_status, last_used_at } = codespace;
     this.Workflow.addItem({
       title: `${repository}  ·  􀙠 ${git_status.ref}`,
-      subtitle: `${state}, last used ${datetimeFormat(last_used_at)}`,
+      subtitle: `${state}, 􀣔 ${datetimeFormat(last_used_at)}`,
       arg: url,
       icon: { path: "icons/codespace.png" },
       variables: { execute: "open_link" },
@@ -775,6 +792,20 @@ class Interface {
           arg: `${this.#Cache.baseUrl}/codespaces/${name}?editor=vscode`,
           icon: { path: "icons/vscode.png" },
         }
+      }
+    });
+  }
+
+  #formatProject(project) {
+    let { title, public: _public, url, shortDescription, updatedAt } = project;
+    this.Workflow.addItem({
+      title,
+      subtitle: shortDescription,
+      arg: url,
+      icon: { path: `icons/project${_public ? '' : '_private'}.png` },
+      variables: { execute: "open_link" },
+      mods: {
+        cmd: {subtitle: `􀣔 ${datetimeFormat(updatedAt)}`, valid: !1},
       }
     });
   }

@@ -559,6 +559,31 @@ const MY_PRS = [`
 }
 ];
 
+const MY_PROJECTS = [`
+  query MyProjects($cursor: String) {
+    viewer {
+      projectsV2(first: 100, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
+        nodes {
+          id
+          title
+          url
+          shortDescription
+          public
+          createdAt
+          updatedAt
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  }`,
+  {
+    cursor: null
+  }
+];
+
 const SEARCH = `
   query SearchRepos($q: String!, $type: SearchType = REPOSITORY, $cursor: String) {
     search(query: $q, type: $type, first: 12, after: $cursor) {
@@ -729,6 +754,7 @@ export {
   MY_FOLLOWING,
   MY_ISSUES,
   MY_PRS,
+  MY_PROJECTS,
   SEARCH_USER,
   SEARCH_REPO,
   SEARCH_ISSUE,

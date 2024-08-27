@@ -1,5 +1,5 @@
 {
-  "name": "user.workflow.b84927c2-89c7-40c4-b978-ef575189fe5f",
+  "name": "alfred-github",
   "version": "1.0.0",
   "description": "GitHub Workflow for Alfred 5",
   "main": "",
@@ -15,10 +15,7 @@
     "@octokit/core": "^6.1.2",
     "@octokit/plugin-paginate-graphql": "^5.2.2",
     "@octokit/plugin-paginate-rest": "^11.3.3",
-    "better-sqlite3": "^11.1.2",
+    "better-sqlite3": "^11.2.1",
     "node-fetch": "^3.3.2"
-  },
-  "devDependencies": {
-    "eslint-formatter-compact": "^8.40.0"
   }
 }

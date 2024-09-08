@@ -15,7 +15,10 @@
     "@octokit/core": "^6.1.2",
     "@octokit/plugin-paginate-graphql": "^5.2.2",
     "@octokit/plugin-paginate-rest": "^11.3.3",
-    "better-sqlite3": "^11.2.1",
+    "better-sqlite3": "^11.3.0",
     "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11"
   }
 }

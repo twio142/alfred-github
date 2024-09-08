@@ -109,8 +109,8 @@ class Cache {
     if (Cache.noCacheActions.includes(action)) {
       return { data };
     } else if (data) {
-      // if (action === 'ME')
-      //   this.#cacheMyAvatar(data.avatarUrl);
+      if (action === 'ME')
+        this.#cacheMyAvatar(data.avatarUrl);
       id = this.#cacheData(action, options, data, id, prevId, prevNodeId);
       return { data, id };
     } else {
@@ -160,10 +160,11 @@ class Cache {
   }
 
   #cacheMyAvatar(url) {
-    spawn('curl', ['-o', 'icons/me.png', url], {
-      detached: true,
-      stdio: "ignore",
-    }).unref();
+    if (!existsSync('icons/me.png'))
+      spawn('curl', ['-o', 'icons/me.png', url], {
+        detached: true,
+        stdio: "ignore",
+      }).unref();
   }
 
   /**
@@ -175,7 +176,7 @@ class Cache {
    * @param {string} prevNodeId
    * @returns {number}
    */
-  #cacheData(action, options = {}, data, id, prevId, prevNodeId=null) {
+  #cacheData(action, options = {}, data, id, prevId, prevNodeId = null) {
     id = parseInt(id) || null;
     prevId = parseInt(prevId) || null;
     if (id) {
@@ -355,7 +356,7 @@ class Cache {
           "SELECT value FROM configs WHERE key = 'gistUrl'"
         )
         .get()
-      ?.value
+        ?.value
       : "https://gist.github.com";
   }
 
@@ -381,7 +382,7 @@ class Cache {
 export default Cache;
 
 if (fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
-  let cache = new Cache();
+  const cache = new Cache();
   if (process.argv[2] === "clear") {
     cache.clearCache();
   } else if (process.argv[2]) {

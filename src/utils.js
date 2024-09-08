@@ -51,9 +51,9 @@ function notify(message, subtitle = '') {
 }
 
 class Enum extends Array {
-    constructor(...args) {
-        super(...args);
-    }
+  constructor(...args) {
+    super(...args);
+  }
 }
 
 export {

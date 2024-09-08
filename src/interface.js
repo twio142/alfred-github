@@ -83,11 +83,11 @@ class Interface {
       process.env.prevNodeId && parseInt(process.env.prevId)
     ) {
       if (this.#debug)
-          console.error(
-              4,
-              process.env.prevId,
-              process.env.prevNodeId
-          );
+        console.error(
+          4,
+          process.env.prevId,
+          process.env.prevNodeId
+        );
       this.#prevId = process.env.prevId;
       this.#prevNodeId = process.env.prevNodeId;
       this.Workflow.setVar("prevId", "");
@@ -356,7 +356,7 @@ class Interface {
     (await Promise.all(promises))
       .map((p) => p.data?.map(node => ({ ...node, prevId: p.id })) || [])
       .flat()
-      .map((node) => (node.id.startsWith("R_") ? node : {...node.repository, prevId: node.prevId}))
+      .map((node) => (node.id.startsWith("R_") ? node : { ...node.repository, prevId: node.prevId }))
       .forEach(
         (node) =>
           repos.find((n) => n.id === node.id) || repos.push(node)
@@ -676,10 +676,10 @@ class Interface {
       },
       mods: {
         shift: {
-            subtitle: "Open in browser",
-            arg: release.url,
-            variables: { execute: "open_link" },
-          },
+          subtitle: "Open in browser",
+          arg: release.url,
+          variables: { execute: "open_link" },
+        },
         alt: { subtitle: release.description || "", valid: !1 },
       },
     });
@@ -805,7 +805,7 @@ class Interface {
       icon: { path: `icons/project${_public ? '' : '_private'}.png` },
       variables: { execute: "open_link" },
       mods: {
-        cmd: {subtitle: `􀣔 ${datetimeFormat(updatedAt)}`, valid: !1},
+        cmd: { subtitle: `􀣔 ${datetimeFormat(updatedAt)}`, valid: !1 },
       }
     });
   }
@@ -987,7 +987,7 @@ class Interface {
         text: { copy: repo.parent.nameWithOwner },
         variables: {
           action: "NODES",
-          options: JSON.stringify({ids: [repo.parent.id]}),
+          options: JSON.stringify({ ids: [repo.parent.id] }),
           prevId: this.#prevId,
           prevNodeId: this.#prevNodeId,
         },
@@ -1185,11 +1185,11 @@ class Interface {
       case "FOLLOW":
       case "UNFOLLOW":
         {
-        notify(
-          `${data.viewerIsFollowing ? "Following" : "Unfollowed"} ${data.login}`
-        );
-        break;
-      }
+          notify(
+            `${data.viewerIsFollowing ? "Following" : "Unfollowed"} ${data.login}`
+          );
+          break;
+        }
     }
     this.#Cache.refresh(!0);
   }

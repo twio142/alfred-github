@@ -1,12 +1,17 @@
-'use strict';
+"use strict";
 
 class Workflow {
   items = [];
   variables = {};
   // #debug = !!process.env.alfred_debug;
 
-  filter(str = '') {
-    this.items = this.items.filter(item => (item.match || item.title).toLowerCase().split(' ').find(x => x.startsWith(str.toLowerCase())));
+  filter(str = "") {
+    this.items = this.items.filter((item) =>
+      (item.match || item.title)
+        .toLowerCase()
+        .split(" ")
+        .find((x) => x.startsWith(str.toLowerCase())),
+    );
   }
 
   addItem(item) {
@@ -18,19 +23,25 @@ class Workflow {
   }
 
   warnEmpty(title, subtitle) {
-    this.items = [{
-      title,
-      subtitle,
-      valid: false,
-      icon: { path: `${process.env.alfred_preferences || '../..'}/resources/AlertCautionIcon.icns` }
-    }];
+    this.items = [
+      {
+        title,
+        subtitle,
+        valid: false,
+        icon: {
+          path: `${process.env.alfred_preferences || "../.."}/resources/AlertCautionIcon.icns`,
+        },
+      },
+    ];
   }
 
   output() {
-    console.log(JSON.stringify({
-      items: this.items,
-      variables: this.variables
-    }));
+    console.log(
+      JSON.stringify({
+        items: this.items,
+        variables: this.variables,
+      }),
+    );
   }
 }
 

@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 import { Enum } from "./utils.js";
 // X-Github-Next-Global-ID: 1
 
@@ -48,7 +48,7 @@ const USER_REPOS = [
   }
   ${QUERY_REPO}
   fragment getRepos on RepositoryOwner {
-    repositories(first: 100, after: $cursor, orderBy: {field: STARGAZERS, direction: DESC}) {
+    repositories(first: 50, after: $cursor, orderBy: {field: STARGAZERS, direction: DESC}) {
       nodes {
         ...queryRepo
       }
@@ -60,9 +60,9 @@ const USER_REPOS = [
   }
   `,
   {
-    name: '',
-    cursor: null
-  }
+    name: "",
+    cursor: null,
+  },
 ];
 
 const QUERY_USER = `
@@ -131,7 +131,7 @@ const REPO_ISSUES = [
   `
   query RepoIssues($owner: String!, $name: String!, $cursor: String) {
     repository(owner: $owner, name: $name) {
-      issues(states: [OPEN], first: 100, orderBy: {field: CREATED_AT, direction: DESC}, after: $cursor) {
+      issues(states: [OPEN], first: 50, orderBy: {field: CREATED_AT, direction: DESC}, after: $cursor) {
         nodes {
           ...queryIssue
         }
@@ -146,10 +146,10 @@ const REPO_ISSUES = [
   ${QUERY_REPO}
   `,
   {
-    owner: '',
-    name: '',
-    cursor: null
-  }
+    owner: "",
+    name: "",
+    cursor: null,
+  },
 ];
 
 const QUERY_PR = `
@@ -185,7 +185,7 @@ const REPO_PRS = [
   query RepoPRs($owner: String!, $name: String!, $cursor: String) {
     repository(owner: $owner, name: $name) {
       pullRequests(
-        first: 100
+        first: 50
         states: [OPEN]
         orderBy: {field: CREATED_AT, direction: DESC}
         after: $cursor
@@ -204,10 +204,10 @@ const REPO_PRS = [
   ${QUERY_REPO}
   `,
   {
-    owner: '',
-    name: '',
-    cursor: null
-  }
+    owner: "",
+    name: "",
+    cursor: null,
+  },
 ];
 
 const REPO_RELEASES = [
@@ -232,16 +232,17 @@ const REPO_RELEASES = [
   }
   `,
   {
-    owner: '',
-    name: ''
-  }
+    owner: "",
+    name: "",
+  },
 ];
 
-const RELEASE_ASSETS = [`
+const RELEASE_ASSETS = [
+  `
   query ReleaseAssets($id: ID!) {
     node(id: $id) {
       ... on Release {
-        releaseAssets(first: 100) {
+        releaseAssets(first: 50) {
           nodes {
             name
             size
@@ -255,9 +256,9 @@ const RELEASE_ASSETS = [`
   }
   `,
   {
-    id: ''
-  }
-]
+    id: "",
+  },
+];
 
 const REPO_TREE = [
   `
@@ -320,7 +321,7 @@ const NODES = [
   `,
   {
     ids: [],
-    cursor: null
+    cursor: null,
   },
 ];
 
@@ -335,7 +336,7 @@ const ME = [
     }
   }
   `,
-  {}
+  {},
 ];
 
 const MY_REPOS = [
@@ -347,7 +348,7 @@ const MY_REPOS = [
   }
   ${QUERY_REPO}
   fragment getRepos on RepositoryOwner {
-    repositories(first: 100, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
+    repositories(first: 50, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
       nodes {
         ...queryRepo
       }
@@ -367,7 +368,7 @@ const MY_WATCHING = [
   `
   query MyWatching($cursor: String) {
     viewer {
-      watching(first: 100, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
+      watching(first: 50, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
         nodes {
           ...queryRepo
         }
@@ -385,10 +386,11 @@ const MY_WATCHING = [
   },
 ];
 
-const MY_STARS = [`
+const MY_STARS = [
+  `
   query MyStars($cursor: String) {
     viewer {
-      starredRepositories(first: 100, after: $cursor, orderBy: {field: STARRED_AT, direction: DESC}) {
+      starredRepositories(first: 50, after: $cursor, orderBy: {field: STARRED_AT, direction: DESC}) {
         nodes {
           ...queryRepo
         }
@@ -401,12 +403,13 @@ const MY_STARS = [`
   }
   ${QUERY_REPO}
   `,
-{
-  cursor: null
-}
+  {
+    cursor: null,
+  },
 ];
 
-const QUERY_LIST = `
+const QUERY_LIST = [
+  `
   fragment queryList on UserList {
     name
     description
@@ -416,7 +419,7 @@ const QUERY_LIST = `
     user {
       login
     }
-    items(first: 100, after: $cursor) {
+    items(first: 50, after: $cursor) {
       totalCount
       nodes {
         ... on Repository {
@@ -424,13 +427,17 @@ const QUERY_LIST = `
         }
       }
     }
-  }
-`;
+  }`,
+  {
+    cursor: null,
+  },
+];
 
-const MY_LISTS = [`
+const MY_LISTS = [
+  `
   query MyLists($cursor: String) {
     viewer {
-      lists(first: 100) {
+      lists(first: 50) {
         nodes {
           ...queryList
         }
@@ -443,9 +450,9 @@ const MY_LISTS = [`
   }
   ${QUERY_LIST}
   `,
-{
-  cursor: null
-}
+  {
+    cursor: null,
+  },
 ];
 
 // const QUERY_GIST = `
@@ -477,7 +484,7 @@ const MY_LISTS = [`
 //   }
 //   ${QUERY_GIST}
 //   fragment getGists on User {
-//     gists(privacy: ALL, orderBy: {field: UPDATED_AT, direction: DESC}, first: 100, after: $cursor) {
+//     gists(privacy: ALL, orderBy: {field: UPDATED_AT, direction: DESC}, first: 50, after: $cursor) {
 //       nodes {
 //         ...queryGist
 //       }
@@ -489,14 +496,15 @@ const MY_LISTS = [`
 //   }
 //   `,
 //   {
-//     cursor: null
+//     cursor: null,
 //   }
 // ];
 
-const MY_FOLLOWING = [`
+const MY_FOLLOWING = [
+  `
   query MyFollowing($cursor: String) {
     viewer {
-      following(first: 100, after: $cursor) {
+      following(first: 50, after: $cursor) {
         nodes {
           ...queryUser
         }
@@ -509,15 +517,16 @@ const MY_FOLLOWING = [`
   }
   ${QUERY_USER}
   `,
-{
-  cursor: null
-}
+  {
+    cursor: null,
+  },
 ];
 
-const MY_ISSUES = [`
+const MY_ISSUES = [
+  `
   query MyIssues($states: [IssueState!] = OPEN, $cursor: String) {
     viewer {
-      issues(first: 100, orderBy: {field: UPDATED_AT, direction: DESC}, filterBy: {viewerSubscribed: true, states: $states}, after: $cursor) {
+      issues(first: 50, orderBy: {field: UPDATED_AT, direction: DESC}, filterBy: {viewerSubscribed: true, states: $states}, after: $cursor) {
         nodes {
           ...queryIssue
         }
@@ -531,16 +540,17 @@ const MY_ISSUES = [`
   ${QUERY_ISSUE}
   ${QUERY_REPO}
   `,
-{
-  states: new Enum('OPEN', null),
-  cursor: null
-}
+  {
+    states: new Enum("OPEN", null),
+    cursor: null,
+  },
 ];
 
-const MY_PRS = [`
+const MY_PRS = [
+  `
   query MyPRs($cursor: String) {
     viewer {
-      pullRequests(first: 100, orderBy: {field: UPDATED_AT, direction: DESC}, states: OPEN, after: $cursor) {
+      pullRequests(first: 50, orderBy: {field: UPDATED_AT, direction: DESC}, states: OPEN, after: $cursor) {
         nodes {
           ...queryPR
         }
@@ -554,15 +564,16 @@ const MY_PRS = [`
   ${QUERY_PR}
   ${QUERY_REPO}
   `,
-{
-  cursor: null
-}
+  {
+    cursor: null,
+  },
 ];
 
-const MY_PROJECTS = [`
+const MY_PROJECTS = [
+  `
   query MyProjects($cursor: String) {
     viewer {
-      projectsV2(first: 100, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
+      projectsV2(first: 50, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
         nodes {
           id
           title
@@ -580,8 +591,8 @@ const MY_PROJECTS = [`
     }
   }`,
   {
-    cursor: null
-  }
+    cursor: null,
+  },
 ];
 
 const SEARCH = `
@@ -602,28 +613,28 @@ const SEARCH = `
 const SEARCH_USER = [
   SEARCH,
   {
-    q: '',
-    type: 'USER',
-    cursor: null
-  }
+    q: "",
+    type: "USER",
+    cursor: null,
+  },
 ];
 
 const SEARCH_REPO = [
   SEARCH,
   {
-    q: '',
-    type: 'REPOSITORY',
-    cursor: null
-  }
+    q: "",
+    type: "REPOSITORY",
+    cursor: null,
+  },
 ];
 
 const SEARCH_ISSUE = [
   SEARCH,
   {
-    q: '',
-    type: 'ISSUE',
-    cursor: null
-  }
+    q: "",
+    type: "ISSUE",
+    cursor: null,
+  },
 ];
 
 const STAR = [
@@ -654,9 +665,9 @@ const STAR = [
   }
   `,
   {
-    id: '',
-    unstar: false
-  }
+    id: "",
+    unstar: false,
+  },
 ];
 
 const SUBSCRIBE = [
@@ -685,9 +696,9 @@ const SUBSCRIBE = [
   }
   `,
   {
-    id: '',
-    state: new Enum('SUBSCRIBED', 'UNSUBSCRIBED')
-  }
+    id: "",
+    state: new Enum("SUBSCRIBED", "UNSUBSCRIBED"),
+  },
 ];
 
 const FOLLOW = [
@@ -709,7 +720,7 @@ const FOLLOW = [
   `,
   {
     org: false,
-    id: ""
+    id: "",
   },
 ];
 
@@ -732,10 +743,9 @@ const UNFOLLOW = [
   `,
   {
     org: false,
-    id: ""
-  }
+    id: "",
+  },
 ];
-
 
 export {
   USER_REPOS,
@@ -761,5 +771,5 @@ export {
   STAR,
   SUBSCRIBE,
   FOLLOW,
-  UNFOLLOW
+  UNFOLLOW,
 };

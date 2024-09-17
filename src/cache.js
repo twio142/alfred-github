@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-'use strict';
+"use strict";
 import Database from "better-sqlite3";
 import { mkdirSync, writeFile, existsSync, unlinkSync, realpathSync } from "fs";
 import GitHub from "./github.js";
 import { spawn } from "child_process";
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from "url";
 
 class Cache {
   static #dbFile = `${process.env.alfred_workflow_data}/cache.db`;
@@ -17,9 +17,7 @@ class Cache {
   #apiUrl = () => {
     if (this.#enterprise) {
       let url = this.#db
-        .prepare(
-          "SELECT value FROM configs WHERE key = 'enterpriseUrl'"
-        )
+        .prepare("SELECT value FROM configs WHERE key = 'enterpriseUrl'")
         .get()?.value;
       return url ? url.replace(/\/?$/, "/api/v3") : null;
     } else {
@@ -67,9 +65,7 @@ class Cache {
   }
 
   static #dict(options = {}) {
-    return JSON.stringify(
-      Object.fromEntries(Object.entries(options).sort())
-    );
+    return JSON.stringify(Object.fromEntries(Object.entries(options).sort()));
   }
 
   /**
@@ -109,8 +105,7 @@ class Cache {
     if (Cache.noCacheActions.includes(action)) {
       return { data };
     } else if (data) {
-      if (action === 'ME')
-        this.#cacheMyAvatar(data.avatarUrl);
+      if (action === "ME") this.#cacheMyAvatar(data.avatarUrl);
       id = this.#cacheData(action, options, data, id, prevId, prevNodeId);
       return { data, id };
     } else {
@@ -131,7 +126,7 @@ class Cache {
     WHERE action = ? AND options = ?
     ORDER BY timestamp DESC
     LIMIT 1;
-  `
+  `,
       )
       .get(action, Cache.#dict(options));
     if (row) row.data = JSON.parse(row.data);
@@ -149,7 +144,7 @@ class Cache {
         `
     SELECT * FROM cache
     WHERE id = ?
-  `
+  `,
       )
       .get(parseInt(id));
     if (row) {
@@ -160,8 +155,8 @@ class Cache {
   }
 
   #cacheMyAvatar(url) {
-    if (!existsSync('icons/me.png'))
-      spawn('curl', ['-o', 'icons/me.png', url], {
+    if (!existsSync("icons/me.png"))
+      spawn("curl", ["-o", "icons/me.png", url], {
         detached: true,
         stdio: "ignore",
       }).unref();
@@ -186,7 +181,7 @@ class Cache {
     UPDATE cache
     SET data = ?, timestamp = CURRENT_TIMESTAMP, prevId = ?, prevNodeId = ?
     WHERE id = ?
-    `
+    `,
         )
         .run(JSON.stringify(data), prevId, prevNodeId, id);
     } else {
@@ -196,14 +191,14 @@ class Cache {
     INSERT INTO cache (action, options, data, prevId, prevNodeId)
     VALUES (?, ?, ?, ?, ?)
     RETURNING id;
-    `
+    `,
         )
         .get(
           action,
           Cache.#dict(options),
           JSON.stringify(data),
           prevId,
-          prevNodeId
+          prevNodeId,
         ).id;
     }
     return id;
@@ -223,7 +218,7 @@ class Cache {
         detached: true,
         stdio: "ignore",
         env: process.env,
-      }
+      },
     );
     if (action) {
       child.unref();
@@ -232,7 +227,7 @@ class Cache {
     writeFile(
       `${process.env.alfred_workflow_cache}/pid`,
       String(child.pid),
-      () => child.unref()
+      () => child.unref(),
     );
   }
 
@@ -274,7 +269,7 @@ class Cache {
 
   async refresh(force = !1) {
     let promises = Cache.myResources.map(([action, options]) =>
-      this.request(action, options, force)
+      this.request(action, options, force),
     );
     await Promise.all(promises);
   }
@@ -284,7 +279,7 @@ class Cache {
       this.#db.exec("DELETE FROM cache;");
     } else {
       this.#db.exec(
-        `DELETE FROM cache WHERE timestamp < DATETIME('now', '-1 day');`
+        `DELETE FROM cache WHERE timestamp < DATETIME('now', '-1 day');`,
       );
     }
   }
@@ -304,7 +299,7 @@ class Cache {
     INSERT INTO configs (key, value)
     VALUES ('accessToken', ?)
     ON CONFLICT DO UPDATE SET value = ?;
-  `
+  `,
       )
       .run(token, token);
     if (this.#loggedIn())
@@ -321,11 +316,9 @@ class Cache {
   get baseUrl() {
     return this.#enterprise
       ? this.#db
-        .prepare(
-          "SELECT value FROM configs WHERE key = 'enterpriseUrl'"
-        )
-        .get()
-        ?.value?.replace(/\/$/, "")
+          .prepare("SELECT value FROM configs WHERE key = 'enterpriseUrl'")
+          .get()
+          ?.value?.replace(/\/$/, "")
       : "https://github.com";
   }
 
@@ -338,7 +331,7 @@ class Cache {
     INSERT INTO configs (key, value)
     VALUES ('enterpriseUrl', ?)
     ON CONFLICT DO UPDATE SET value = ?;
-    `
+    `,
         )
         .run(url, url);
       if (this.#loggedIn())
@@ -352,11 +345,8 @@ class Cache {
   get gistUrl() {
     return this.#enterprise
       ? this.#db
-        .prepare(
-          "SELECT value FROM configs WHERE key = 'gistUrl'"
-        )
-        .get()
-        ?.value
+          .prepare("SELECT value FROM configs WHERE key = 'gistUrl'")
+          .get()?.value
       : "https://gist.github.com";
   }
 
@@ -368,7 +358,7 @@ class Cache {
     INSERT INTO configs (key, value)
     VALUES ('gistUrl', ?)
     ON CONFLICT DO UPDATE SET value = ?;
-    `
+    `,
         )
         .run(url, url);
     }
@@ -389,7 +379,7 @@ if (fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
     cache.requestAPI(
       process.argv[2],
       JSON.parse(process.argv[3]),
-      process.argv[4]
+      process.argv[4],
     );
   } else {
     cache

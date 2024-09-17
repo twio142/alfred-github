@@ -32,7 +32,8 @@ class Interface {
       this.#Cache.refreshInBackground();
     }
     if (parseInt(process.env.back)) {
-      if (this.#debug) console.error(1, process.env.back, process.env.prevNodeId);
+      if (this.#debug)
+        console.error(1, process.env.back, process.env.prevNodeId);
       let row = this.#Cache.requestCacheById(process.env.back);
       this.Workflow.setVar("back", "");
       if (row?.data) {
@@ -51,18 +52,31 @@ class Interface {
       }
     } else if (process.env.action?.startsWith("SEARCH_")) {
       if (this.#debug) console.error(2, process.env.action);
-      if (process.env.queryPrefix) query = process.env.queryPrefix + " " + query;
+      if (process.env.queryPrefix)
+        query = process.env.queryPrefix + " " + query;
       this.#prevId = process.env.prevId || this.#prevId;
       this.#prevNodeId = process.env.prevNodeId;
       await this.search(query, process.env.action);
     } else if (process.env.action) {
-      if (this.#debug) console.error(3, process.env.action, process.env.prevId, process.env.prevNodeId);
+      if (this.#debug)
+        console.error(
+          3,
+          process.env.action,
+          process.env.prevId,
+          process.env.prevNodeId,
+        );
       let action = process.env.action;
       this.#prevId = process.env.prevId || this.#prevId;
       this.#prevNodeId = process.env.prevNodeId;
       let options = JSON.parse(process.env.options || "{}");
       try {
-        let { id, data } = await this.#Cache.request(action, options, null, this.#prevId, this.#prevNodeId);
+        let { id, data } = await this.#Cache.request(
+          action,
+          options,
+          null,
+          this.#prevId,
+          this.#prevNodeId,
+        );
         if (Cache.noCacheActions.includes(action)) {
           return this.notifyAction(action, data);
         } else if (!data?.length) {
@@ -79,15 +93,9 @@ class Interface {
           this.Workflow.warnEmpty("Error: " + e.message);
         }
       }
-    } else if (
-      process.env.prevNodeId && parseInt(process.env.prevId)
-    ) {
+    } else if (process.env.prevNodeId && parseInt(process.env.prevId)) {
       if (this.#debug)
-        console.error(
-          4,
-          process.env.prevId,
-          process.env.prevNodeId
-        );
+        console.error(4, process.env.prevId, process.env.prevNodeId);
       this.#prevId = process.env.prevId;
       this.#prevNodeId = process.env.prevNodeId;
       this.Workflow.setVar("prevId", "");
@@ -137,7 +145,7 @@ class Interface {
           arg: `${baseUrl}/${username}?tab=repositories`,
           variables: { execute: "open_link" },
         },
-      }
+      },
     });
     this.Workflow.addItem({
       title: "My Starred Repos",
@@ -153,7 +161,7 @@ class Interface {
           arg: `${baseUrl}/${username}?tab=stars`,
           variables: { execute: "open_link" },
         },
-      }
+      },
     });
     this.Workflow.addItem({
       title: "My Lists",
@@ -169,7 +177,7 @@ class Interface {
           arg: `${baseUrl}/${username}?tab=stars`,
           variables: { execute: "open_link" },
         },
-      }
+      },
     });
     this.Workflow.addItem({
       title: "My Watching Repos",
@@ -185,7 +193,7 @@ class Interface {
           arg: `${baseUrl}/${username}?tab=watching`,
           variables: { execute: "open_link" },
         },
-      }
+      },
     });
     this.Workflow.addItem({
       title: "My Gists",
@@ -201,7 +209,7 @@ class Interface {
           arg: `${gistUrl}/${username}`,
           variables: { execute: "open_link" },
         },
-      }
+      },
     });
     this.Workflow.addItem({
       title: "My Starred Gists",
@@ -217,7 +225,7 @@ class Interface {
           arg: `${gistUrl}/${username}/starred`,
           variables: { execute: "open_link" },
         },
-      }
+      },
     });
     this.Workflow.addItem({
       title: "My Following Users",
@@ -233,7 +241,7 @@ class Interface {
           arg: `${baseUrl}/${username}?tab=following`,
           variables: { execute: "open_link" },
         },
-      }
+      },
     });
     this.Workflow.addItem({
       title: "My Issues",
@@ -249,7 +257,7 @@ class Interface {
           arg: `${baseUrl}/issues`,
           variables: { execute: "open_link" },
         },
-      }
+      },
     });
     this.Workflow.addItem({
       title: "My Pull Requests",
@@ -265,7 +273,7 @@ class Interface {
           arg: `${baseUrl}/pulls`,
           variables: { execute: "open_link" },
         },
-      }
+      },
     });
     this.Workflow.addItem({
       title: "My Notifications",
@@ -281,7 +289,7 @@ class Interface {
           arg: `${baseUrl}/notifications`,
           variables: { execute: "open_link" },
         },
-      }
+      },
     });
     this.Workflow.addItem({
       title: "My Projects",
@@ -297,7 +305,7 @@ class Interface {
           arg: `${baseUrl}/${username}?tab=projects`,
           variables: { execute: "open_link" },
         },
-      }
+      },
     });
     this.Workflow.addItem({
       title: "My Codespaces",
@@ -313,7 +321,7 @@ class Interface {
           arg: `${baseUrl}/codespaces`,
           variables: { execute: "open_link" },
         },
-      }
+      },
     });
     this.Workflow.addItem({
       title: "My Profile",
@@ -350,19 +358,22 @@ class Interface {
       this.#Cache.request(action, options).catch((e) => {
         console.error(e.message);
         return {};
-      })
+      }),
     );
     let repos = [];
     (await Promise.all(promises))
-      .map((p) => p.data?.map(node => ({ ...node, prevId: p.id })) || [])
+      .map((p) => p.data?.map((node) => ({ ...node, prevId: p.id })) || [])
       .flat()
-      .map((node) => (node.id.startsWith("R_") ? node : { ...node.repository, prevId: node.prevId }))
+      .map((node) =>
+        node.id.startsWith("R_")
+          ? node
+          : { ...node.repository, prevId: node.prevId },
+      )
       .forEach(
-        (node) =>
-          repos.find((n) => n.id === node.id) || repos.push(node)
+        (node) => repos.find((n) => n.id === node.id) || repos.push(node),
       );
     repos.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-    repos.forEach(repo => this.formatOutput([repo], repo.prevId));
+    repos.forEach((repo) => this.formatOutput([repo], repo.prevId));
   }
 
   async mainMenu(query) {
@@ -391,7 +402,7 @@ class Interface {
           subtitle: "Search in browser",
           variables: { execute: "open_link" },
           arg: `${baseUrl}/search?q=${encodeURIComponent(
-            query
+            query,
           )}&type=repositories`,
         },
       },
@@ -406,9 +417,7 @@ class Interface {
         cmd: {
           subtitle: "Search in browser",
           variables: { execute: "open_link" },
-          arg: `${baseUrl}/search?q=${encodeURIComponent(
-            query
-          )}&type=users`,
+          arg: `${baseUrl}/search?q=${encodeURIComponent(query)}&type=users`,
         },
       },
     });
@@ -422,9 +431,7 @@ class Interface {
         cmd: {
           subtitle: "Search in browser",
           variables: { execute: "open_link" },
-          arg: `${baseUrl}/search?q=${encodeURIComponent(
-            query
-          )}&type=issues`,
+          arg: `${baseUrl}/search?q=${encodeURIComponent(query)}&type=issues`,
         },
       },
     });
@@ -441,9 +448,7 @@ class Interface {
         cmd: {
           subtitle: "Search in browser",
           variables: { execute: "open_link" },
-          arg: `${baseUrl}/search?q=${encodeURIComponent(
-            query
-          )}&type=topics`,
+          arg: `${baseUrl}/search?q=${encodeURIComponent(query)}&type=topics`,
         },
       },
     });
@@ -452,7 +457,13 @@ class Interface {
   async search(query, action = "SEARCH_REPO") {
     if (!action.startsWith("SEARCH_")) throw new Error("Invalid action.");
     try {
-      let { data, id } = await this.#Cache.request(action, { q: query }, null, this.#prevId, this.#prevNodeId);
+      let { data, id } = await this.#Cache.request(
+        action,
+        { q: query },
+        null,
+        this.#prevId,
+        this.#prevNodeId,
+      );
       this.formatOutput(data, id);
     } catch (e) {
       this.Workflow.warnEmpty("Error: " + e.message);
@@ -512,7 +523,9 @@ class Interface {
       autocomplete: repo.nameWithOwner,
       variables: { execute: "open_link" },
       match: matchStr(repo.nameWithOwner),
-      icon: { path: `icons/repo${repo.isPrivate ? "_private" : repo.viewerHasStarred ? "_star" : ""}.png` },
+      icon: {
+        path: `icons/repo${repo.isPrivate ? "_private" : repo.viewerHasStarred ? "_star" : ""}.png`,
+      },
       text: {
         largetype: repo.description,
         copy: repo.name,
@@ -572,7 +585,7 @@ class Interface {
     let name = `${gist.owner}/${gist.files[0].name}`;
     let title = `${name}  ${gist.public ? "" : "􀎡"}`;
     let subtitle = `􀈷 ${gist.files.length} · 􀣔 ${datetimeFormat(
-      gist.updatedAt
+      gist.updatedAt,
     )}`;
     this.Workflow.addItem({
       title,
@@ -585,7 +598,11 @@ class Interface {
         largetype: gist.description,
       },
       mods: {
-        cmd: { subtitle: "Copy raw URL(s)", arg: gist.files.map((f) => f.url), variables: { execute: "copy" } },
+        cmd: {
+          subtitle: "Copy raw URL(s)",
+          arg: gist.files.map((f) => f.url),
+          variables: { execute: "copy" },
+        },
         alt: { subtitle: gist.description || "", valid: !1 },
       },
     });
@@ -616,8 +633,9 @@ class Interface {
   }
 
   #formatIssue(issue) {
-    let title = `${issue.title}  ${issue.viewerSubscription === "SUBSCRIBED" ? "􀋙" : ""
-      }`;
+    let title = `${issue.title}  ${
+      issue.viewerSubscription === "SUBSCRIBED" ? "􀋙" : ""
+    }`;
     let comments = convertNum(issue.comments.totalCount),
       updated = datetimeFormat(issue.updatedAt);
     let subtitle = [
@@ -627,8 +645,7 @@ class Interface {
     ]
       .filter(Boolean)
       .join(" · ");
-    let icon = `icons/${issue.id.startsWith("I") ? "issue" : "pullRequest"}_${issue.state
-      .toLowerCase()}.png`;
+    let icon = `icons/${issue.id.startsWith("I") ? "issue" : "pullRequest"}_${issue.state.toLowerCase()}.png`;
     this.Workflow.addItem({
       title,
       subtitle,
@@ -650,8 +667,7 @@ class Interface {
       release.tagName && release.tagName !== release.name
         ? ` (􀋡 ${release.tagName})`
         : "";
-    let title = `${release.name}${tag}  ${release.isPrerelease ? "🚧" : ""
-      }`;
+    let title = `${release.name}${tag}  ${release.isPrerelease ? "🚧" : ""}`;
     let assets = release.releaseAssets.totalCount
       ? `􀐚 ${release.releaseAssets.totalCount}`
       : "";
@@ -667,7 +683,7 @@ class Interface {
         action: "RELEASE_ASSETS",
         options: JSON.stringify({ id: release.id }),
         prevId: id,
-        prevNodeId: ""
+        prevNodeId: "",
       },
       quicklookurl: release.url,
       match: matchStr(release.name, release.tagName),
@@ -725,9 +741,12 @@ class Interface {
   }
 
   #formatNotification(notification) {
-    let { title, url, repo, updated_at, tag, thread_id, type, state } = notification;
+    let { title, url, repo, updated_at, tag, thread_id, type, state } =
+      notification;
     tag = tag ? `  􀆃${tag}` : "";
-    let icon = ["Issue", "PullRequest"].includes(type) ? `${type.toLowerCase()}_${state}` : type.toLowerCase();
+    let icon = ["Issue", "PullRequest"].includes(type)
+      ? `${type.toLowerCase()}_${state}`
+      : type.toLowerCase();
     this.Workflow.addItem({
       title,
       subtitle: `${repo}${tag}  􁙜 ${datetimeFormat(updated_at)}`,
@@ -753,7 +772,7 @@ class Interface {
             options: JSON.stringify({ thread_id }),
           },
           icon: { path: "icons/unsubscribe.png" },
-        }
+        },
       },
     });
   }
@@ -791,8 +810,8 @@ class Interface {
           subtitle: "Open codespace in VS Code",
           arg: `${this.#Cache.baseUrl}/codespaces/${name}?editor=vscode`,
           icon: { path: "icons/vscode.png" },
-        }
-      }
+        },
+      },
     });
   }
 
@@ -802,19 +821,22 @@ class Interface {
       title,
       subtitle: shortDescription,
       arg: url,
-      icon: { path: `icons/project${_public ? '' : '_private'}.png` },
+      icon: { path: `icons/project${_public ? "" : "_private"}.png` },
       variables: { execute: "open_link" },
       mods: {
         cmd: { subtitle: `􀣔 ${datetimeFormat(updatedAt)}`, valid: !1 },
-      }
+      },
     });
   }
 
   async subMenu() {
     const nodes = this.#Cache.requestCacheById(this.#prevId)?.data;
     try {
-      const node = nodes?.find((n) => n.id === this.#prevNodeId) || (await this.#Cache.request("NODES", { ids: [this.#prevNodeId] })).data?.[0];
-      if (this.#prevNodeId.startsWith('R_')) {
+      const node =
+        nodes?.find((n) => n.id === this.#prevNodeId) ||
+        (await this.#Cache.request("NODES", { ids: [this.#prevNodeId] }))
+          .data?.[0];
+      if (this.#prevNodeId.startsWith("R_")) {
         this.#repoMenu(node);
       } else {
         this.#userMenu(node);
@@ -846,19 +868,19 @@ class Interface {
       mods: {
         cmd: repo.hasWikiEnabled
           ? {
-            subtitle: "Open wiki",
-            variables: { execute: "open_link" },
-            arg: `${repo.url}/wiki`,
-            icon: { path: "icons/wiki.png" },
-          }
+              subtitle: "Open wiki",
+              variables: { execute: "open_link" },
+              arg: `${repo.url}/wiki`,
+              icon: { path: "icons/wiki.png" },
+            }
           : undefined,
         alt: repo.homepageUrl
           ? {
-            subtitle: "Open homepage",
-            variables: { execute: "open_link" },
-            arg: repo.homepageUrl,
-            icon: { path: "icons/website.png" },
-          }
+              subtitle: "Open homepage",
+              variables: { execute: "open_link" },
+              arg: repo.homepageUrl,
+              icon: { path: "icons/website.png" },
+            }
           : undefined,
         shift: {
           subtitle: "Copy SSH url",
@@ -872,14 +894,15 @@ class Interface {
       title: owner,
       icon: { path: "icons/user.png" },
       match: `user ${owner}`,
-      quicklookurl: repo.url.replace(`/${name}`, ''),
+      quicklookurl: repo.url.replace(`/${name}`, ""),
       variables: { prevNodeId: repo.owner.id, prevId: -1 },
     });
     repo.issues.totalCount &&
       this.Workflow.addItem({
         title: "Issues",
-        subtitle: `${repo.issues.totalCount} issue${repo.issues.totalCount > 1 ? "s" : ""
-          }`,
+        subtitle: `${repo.issues.totalCount} issue${
+          repo.issues.totalCount > 1 ? "s" : ""
+        }`,
         icon: { path: "icons/issue.png" },
         match: "issues",
         quicklookurl: `${repo.url}/issues`,
@@ -900,8 +923,9 @@ class Interface {
     repo.pullRequests.totalCount &&
       this.Workflow.addItem({
         title: "Pull Requests",
-        subtitle: `${repo.pullRequests.totalCount} pull request${repo.pullRequests.totalCount > 1 ? "s" : ""
-          }`,
+        subtitle: `${repo.pullRequests.totalCount} pull request${
+          repo.pullRequests.totalCount > 1 ? "s" : ""
+        }`,
         icon: { path: "icons/pullRequest.png" },
         match: "prs pull requests",
         quicklookurl: `${repo.url}/pulls`,
@@ -963,7 +987,9 @@ class Interface {
           repo.viewerSubscription === "SUBSCRIBED"
             ? "Unwatch Repo"
             : "Watch Repo",
-        icon: { path: `icons/${repo.viewerSubscription === "SUBSCRIBED" ? 'unseen' : 'watching'}.png` },
+        icon: {
+          path: `icons/${repo.viewerSubscription === "SUBSCRIBED" ? "unseen" : "watching"}.png`,
+        },
         match: "watch subscribe",
         variables: {
           execute: "action",
@@ -1017,24 +1043,25 @@ class Interface {
       mods: {
         cmd: user.websiteUrl
           ? {
-            subtitle: "Open website",
-            variables: { execute: "open_link" },
-            arg: user.websiteUrl,
-            icon: { path: "icons/website.png" },
-          }
+              subtitle: "Open website",
+              variables: { execute: "open_link" },
+              arg: user.websiteUrl,
+              icon: { path: "icons/website.png" },
+            }
           : undefined,
       },
     });
     user.repositories.totalCount &&
       this.Workflow.addItem({
         title: "Repositories",
-        subtitle: `${user.repositories.totalCount} repo${user.repositories.totalCount > 1 ? "s" : ""
-          }`,
+        subtitle: `${user.repositories.totalCount} repo${
+          user.repositories.totalCount > 1 ? "s" : ""
+        }`,
         icon: { path: "icons/repo.png" },
         match: "repos",
         variables: {
           action: "SEARCH_REPO",
-          queryPrefix: `${user.id.startsWith('U') ? 'user' : 'org'}:${user.login}`,
+          queryPrefix: `${user.id.startsWith("U") ? "user" : "org"}:${user.login}`,
           prevId: this.#prevId,
           prevNodeId: this.#prevNodeId,
         },
@@ -1165,9 +1192,7 @@ class Interface {
         break;
       case "STAR": {
         let name = data.nameWithOwner || data.name;
-        notify(
-          `${data.viewerHasStarred ? "Starred" : "Unstarred"} ${name}`
-        );
+        notify(`${data.viewerHasStarred ? "Starred" : "Unstarred"} ${name}`);
         break;
       }
       case "SUBSCRIBE": {
@@ -1175,21 +1200,19 @@ class Interface {
           data.nameWithOwner ||
           `${data.repository.nameWithOwner} #${data.number}`;
         notify(
-          `${data.viewerSubscription === "SUBSCRIBED"
-            ? "Watching"
-            : "Unwatched"
-          } ${name}`
+          `${
+            data.viewerSubscription === "SUBSCRIBED" ? "Watching" : "Unwatched"
+          } ${name}`,
         );
         break;
       }
       case "FOLLOW":
-      case "UNFOLLOW":
-        {
-          notify(
-            `${data.viewerIsFollowing ? "Following" : "Unfollowed"} ${data.login}`
-          );
-          break;
-        }
+      case "UNFOLLOW": {
+        notify(
+          `${data.viewerIsFollowing ? "Following" : "Unfollowed"} ${data.login}`,
+        );
+        break;
+      }
     }
     this.#Cache.refresh(!0);
   }

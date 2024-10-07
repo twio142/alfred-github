@@ -11,6 +11,7 @@ import {
   notify,
 } from "./utils.js";
 import { fileURLToPath } from "url";
+import { execSync } from "child_process";
 
 class Interface {
   Workflow;
@@ -343,6 +344,20 @@ class Interface {
       arg: `${baseUrl}/settings/tokens`,
       match: "tokens",
       variables: { execute: "open_link" },
+    });
+    this.Workflow.addItem({
+      title: "My Keys",
+      subtitle: "Copy keys",
+      icon: { path: "icons/key.png" },
+      arg: `${baseUrl}/settings/keys`,
+      match: "keys",
+      variables: { execute: "command", command: "copy_keys" },
+      mods: {
+        shift: {
+          subtitle: "Open in browser",
+          variables: { execute: "open_link" },
+        }
+      }
     });
     this.Workflow.addItem({
       title: "New Repository",
@@ -1090,6 +1105,11 @@ class Interface {
     this.#prevNodeId = null;
   }
 
+  #copyKeys() {
+    let url = `${this.#Cache.baseUrl}/${this.#Cache.username}.keys`;
+    execSync(`curl -s ${url} | pbcopy`);
+  }
+
   runCommand(command, query) {
     switch (command) {
       case "set_enterprise_url":
@@ -1119,6 +1139,10 @@ class Interface {
       case "clear_cache":
         this.#Cache.clearCache(!0);
         notify("Cache cleared");
+        break;
+      case "copy_keys":
+        this.#copyKeys();
+        notify("Public keys copied");
         break;
     }
   }

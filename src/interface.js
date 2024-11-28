@@ -903,6 +903,12 @@ class Interface {
           variables: { execute: "copy" },
           icon: { path: "icons/clone.png" },
         },
+        ctrl: {
+          subtitle: "Open repo in VS Code",
+          arg: `code --folder-uri vscode-vfs://github/${repo.nameWithOwner}`,
+          variables: { execute: "shell" },
+          icon: { path: "icons/vscode.png" },
+        }
       },
     });
     this.Workflow.addItem({

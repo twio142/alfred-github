@@ -200,6 +200,7 @@
   copy)      echo -n "$@" | pbcopy &amp;&amp; afplay /System/Library/Sounds/Purr.aiff;;
   action)    ./src/interface.js;;
   command)   ./src/interface.js "$1";;
+  shell)     eval "$1";;
 esac
 
 ./src/cache.js clear</string>

@@ -58,6 +58,8 @@ class Interface {
       this.#prevId = process.env.prevId || this.#prevId;
       this.#prevNodeId = process.env.prevNodeId;
       await this.search(input, process.env.action);
+    } else if (process.env.action == "CREATE_REPO") {
+      await this.createRepo(input);
     } else if (process.env.action) {
       if (this.#debug)
         console.error(
@@ -362,9 +364,15 @@ class Interface {
     this.Workflow.addItem({
       title: "New Repository",
       icon: { path: "icons/repo_new.png" },
-      arg: `${baseUrl}/new`,
       match: "new repo",
-      variables: { execute: "open_link" },
+      variables: { action: "CREATE_REPO", options: "" },
+      mods: {
+        shift: {
+          subtitle: "Open in browser",
+          arg: `${baseUrl}/new`,
+          variables: { execute: "open_link" },
+        },
+      },
     });
   }
 
@@ -1116,6 +1124,62 @@ class Interface {
         },
       });
     this.#prevNodeId = null;
+  }
+
+  async createRepo(input) {
+    const options = JSON.parse(process.env.options || "{}");
+    if (!options.name) {
+      const nameWithOwner = `${this.#Cache.username}/${input}`;
+      let valid =
+        /^[\w-\.]{1,100}$/.test(input) && !/^[\.-]|[\.-]$|--/.test(input);
+      let message =
+        input.length == 0 || valid ? "" : "􀇾 Invalid repository name";
+      if (valid) {
+        try {
+          const { data: myRepos } = await this.#Cache.requestCache("MY_REPOS", {
+            multiPages: true,
+          });
+          if (myRepos.find((r) => r.nameWithOwner === nameWithOwner)) {
+            valid = !1;
+            message = "􀇾 Repository already exists";
+          }
+        } catch {}
+      }
+      this.Workflow.addItem({
+        title: nameWithOwner || "Enter repository name",
+        subtitle: message || "Create public repository",
+        icon: { path: "icons/repo.png" },
+        valid,
+        variables: {
+          action: "CREATE_REPO",
+          options: JSON.stringify({ name: input }),
+        },
+        mods: {
+          cmd: {
+            subtitle: message || "Create private repository",
+            icon: { path: "icons/repo_private.png" },
+            valid,
+            variables: {
+              action: "CREATE_REPO",
+              options: JSON.stringify({ name: input, visibility: "PRIVATE" }),
+            },
+          },
+          shift: {
+            subtitle: "Open in browser",
+            arg: `https://github.com/new?name=${encodeURIComponent(input)}`,
+            variables: { execute: "open_link" },
+          }
+        },
+      });
+    } else {
+      this.#Cache
+        .request("CREATE_REPO", options)
+        .then(({ data }) => this.#repoMenu(data))
+        .catch((e) => {
+          console.error(e.message);
+          this.Workflow.warnEmpty("Error: " + e.message);
+        });
+    }
   }
 
   #copyKeys() {

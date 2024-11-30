@@ -243,6 +243,7 @@ class Cache {
     "UNFOLLOW",
     "MARK_NOTIFICATION_AS_READ",
     "UNSUBSCRIBE_NOTIFICATION",
+    "CREATE_REPO",
   ];
 
   static myRelatedRepos = [

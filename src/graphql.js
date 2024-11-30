@@ -747,6 +747,23 @@ const UNFOLLOW = [
   },
 ];
 
+const CREATE_REPO = [
+  `
+  mutation CreateRepo($name: String!, $visibility: RepositoryVisibility!) {
+    createRepository(input: {name: $name, visibility: $visibility}) {
+      repository {
+        ...queryRepo
+      }
+    }
+  }
+  ${QUERY_REPO}
+  `,
+  {
+    name: "",
+    visibility: "PUBLIC",
+  },
+];
+
 export {
   USER_REPOS,
   REPO_ISSUES,
@@ -772,4 +789,5 @@ export {
   SUBSCRIBE,
   FOLLOW,
   UNFOLLOW,
+  CREATE_REPO,
 };

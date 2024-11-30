@@ -51,7 +51,7 @@ class GitHub {
   async request(action, options = {}) {
     let data, ACTION;
     if (((ACTION = GitHub.#REST[action]), ACTION)) {
-      for (let key in options) {
+      for (const key in options) {
         if (Object.keys(ACTION[1]).includes(key)) {
           ACTION[1][key] = options[key];
         }
@@ -90,7 +90,7 @@ class GitHub {
         );
       }
     } else if (((ACTION = GitHub.#GQL[action]), ACTION)) {
-      for (let key in ACTION[1]) {
+      for (const key in ACTION[1]) {
         if (ACTION[1][key] instanceof Enum) {
           ACTION[1][key] = ACTION[1][key].includes(options[key])
             ? options[key]
@@ -125,14 +125,14 @@ class GitHub {
 
   async #getNotifications(data) {
     let {
-      reason,
-      id: thread_id,
-      subject: { title, url, latest_comment_url, type },
-      repository: { full_name: repo },
-      updated_at,
-      unread,
-    } = data;
-    let html_url,
+        reason,
+        id: thread_id,
+        subject: { title, url, latest_comment_url, type },
+        repository: { full_name: repo },
+        updated_at,
+        unread,
+      } = data,
+      html_url,
       state,
       tag,
       subject = data.subject;
@@ -183,15 +183,15 @@ class GitHub {
   }
 
   async #getTree({ repository }) {
-    let repo = repository.nameWithOwner;
-    let url = repository.url;
-    let ref = repository.defaultBranchRef.name;
-    let { oid } = repository.defaultBranchRef.target.tree;
-    let { data } = await this.#Octokit.request(
+    const repo = repository.nameWithOwner;
+    const url = repository.url;
+    const ref = repository.defaultBranchRef.name;
+    const { oid } = repository.defaultBranchRef.target.tree;
+    const { data } = await this.#Octokit.request(
       `GET /repos/${repo}/git/trees/${oid}?recursive=true`,
       { headers: GitHub.headers },
     );
-    let tree = data.tree.map(({ path, type, size }) => ({
+    const tree = data.tree.map(({ path, type, size }) => ({
       path,
       type,
       size,

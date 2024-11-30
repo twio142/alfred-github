@@ -12,7 +12,7 @@ function matchStr(str) {
 
 function convertSize(b) {
   if (isNaN(b)) return "";
-  for (let unit of ["", "K", "M", "G"]) {
+  for (const unit of ["", "K", "M", "G"]) {
     if (b < 1024.0) {
       return `${b.toFixed(1)} ${unit}B`;
     } else {
@@ -30,19 +30,19 @@ function datetimeFormat(date) {
     return "just now";
   } else if (interval < 60 * 60) {
     // less than an hour
-    let minutes = (interval / 60).toFixed();
+    const minutes = (interval / 60).toFixed();
     return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
   } else if (interval < 24 * 60 * 60) {
     // less than a day
-    let hours = (interval / 60 / 60).toFixed();
+    const hours = (interval / 60 / 60).toFixed();
     return `${hours} hour${hours > 1 ? "s" : ""} ago`;
   } else if (interval <= 7 * 24 * 60 * 60) {
     // less than a week
-    let days = (interval / 24 / 60 / 60).toFixed();
+    const days = (interval / 24 / 60 / 60).toFixed();
     return `${days} day${days > 1 ? "s" : ""} ago`;
   } else if (interval <= 30 * 24 * 60 * 60) {
     // less than a month
-    let weeks = (interval / 7 / 24 / 60 / 60).toFixed();
+    const weeks = (interval / 7 / 24 / 60 / 60).toFixed();
     return `${weeks} week${weeks > 1 ? "s" : ""} ago`;
   } else if (date.getFullYear() === new Date().getFullYear()) {
     // within the same year

@@ -31,6 +31,7 @@ class Workflow {
         icon: {
           path: `${process.env.alfred_preferences || "../.."}/resources/AlertCautionIcon.icns`,
         },
+        text: { largetype: title },
       },
     ];
   }

@@ -16,7 +16,7 @@ class Cache {
       .get()?.value;
   #apiUrl = () => {
     if (this.#enterprise) {
-      let url = this.#db
+      const url = this.#db
         .prepare("SELECT value FROM configs WHERE key = 'enterpriseUrl'")
         .get()?.value;
       return url ? url.replace(/\/?$/, "/api/v3") : null;
@@ -26,7 +26,7 @@ class Cache {
   };
   #loggedIn = () => !!this.#accessToken() && !!this.#apiUrl();
   #username = () => {
-    let { data } = this.#requestCache("ME");
+    const { data } = this.requestCache("ME");
     return data?.login;
   };
   #GitHub;
@@ -77,7 +77,7 @@ class Cache {
    * @returns {Promise<{data: object, id: number}>}
    */
   async request(action, options = {}, forceRefresh = !1, prevId, prevNodeId) {
-    let row = this.#requestCache(action, options);
+    const row = this.requestCache(action, options);
     if (row.data && !forceRefresh) {
       if (!row.fresh) {
         this.#cacheInBackground(action, options, row.id);
@@ -101,8 +101,8 @@ class Cache {
     id = parseInt(id) || null;
     prevId = parseInt(prevId) || null;
     if (!this.#loggedIn()) throw new Error("Not logged in.");
-    let data = await this.#GitHub.request(action, options);
-    if (Cache.noCacheActions.includes(action)) {
+    const data = await this.#GitHub.request(action, options);
+    if (Cache.#noCacheActions.includes(action)) {
       return { data };
     } else if (data) {
       if (action === "ME") this.#cacheMyAvatar(data.avatarUrl);
@@ -118,8 +118,8 @@ class Cache {
    * @param {object} options
    * @returns {data: object, id: number, fresh: boolean}
    */
-  #requestCache(action, options) {
-    let row = this.#db
+  requestCache(action, options) {
+    const row = this.#db
       .prepare(
         `
     SELECT id, data, timestamp > DATETIME('now', '-10 minutes') AS fresh FROM cache
@@ -139,7 +139,7 @@ class Cache {
    */
   requestCacheById(id) {
     if (!parseInt(id)) return;
-    let row = this.#db
+    const row = this.#db
       .prepare(
         `
     SELECT * FROM cache
@@ -236,7 +236,7 @@ class Cache {
       this.#cacheInBackground();
   }
 
-  static noCacheActions = [
+  static #noCacheActions = [
     "STAR",
     "SUBSCRIBE",
     "FOLLOW",
@@ -268,7 +268,7 @@ class Cache {
   ];
 
   async refresh(force = !1) {
-    let promises = Cache.myResources.map(([action, options]) =>
+    const promises = Cache.myResources.map(([action, options]) =>
       this.request(action, options, force),
     );
     await Promise.all(promises);

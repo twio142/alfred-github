@@ -1172,13 +1172,13 @@ class Interface {
         },
       });
     } else {
-      this.#Cache
-        .request("CREATE_REPO", options)
-        .then(({ data }) => this.#repoMenu(data))
-        .catch((e) => {
-          console.error(e.message);
-          this.Workflow.warnEmpty("Error: " + e.message);
-        });
+      try {
+        const {data} = await this.#Cache.request("CREATE_REPO", options);
+        this.#repoMenu(data);
+      } catch (e) {
+        console.error(e.message);
+        this.Workflow.warnEmpty("Error: " + e.message);
+      }
     }
   }
 

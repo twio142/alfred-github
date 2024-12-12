@@ -1,15 +1,15 @@
-"use strict";
+'use strict';
 
 class Workflow {
   items = [];
   variables = {};
   // #debug = !!process.env.alfred_debug;
 
-  filter(str = "") {
+  filter(str = '') {
     this.items = this.items.filter((item) =>
       (item.match || item.title)
         .toLowerCase()
-        .split(" ")
+        .split(' ')
         .find((x) => x.startsWith(str.toLowerCase())),
     );
   }
@@ -29,7 +29,7 @@ class Workflow {
         subtitle,
         valid: false,
         icon: {
-          path: `${process.env.alfred_preferences || "../.."}/resources/AlertCautionIcon.icns`,
+          path: `${process.env.alfred_preferences || '../..'}/resources/AlertCautionIcon.icns`,
         },
         text: { largetype: title },
       },

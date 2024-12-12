@@ -1,5 +1,5 @@
-"use strict";
-import { Enum } from "./utils.js";
+'use strict';
+import { Enum } from './utils.js';
 // X-Github-Next-Global-ID: 1
 
 const QUERY_REPO = `
@@ -60,7 +60,7 @@ const USER_REPOS = [
   }
   `,
   {
-    name: "",
+    name: '',
     cursor: null,
   },
 ];
@@ -146,8 +146,8 @@ const REPO_ISSUES = [
   ${QUERY_REPO}
   `,
   {
-    owner: "",
-    name: "",
+    owner: '',
+    name: '',
     cursor: null,
   },
 ];
@@ -204,8 +204,8 @@ const REPO_PRS = [
   ${QUERY_REPO}
   `,
   {
-    owner: "",
-    name: "",
+    owner: '',
+    name: '',
     cursor: null,
   },
 ];
@@ -232,8 +232,8 @@ const REPO_RELEASES = [
   }
   `,
   {
-    owner: "",
-    name: "",
+    owner: '',
+    name: '',
   },
 ];
 
@@ -256,7 +256,7 @@ const RELEASE_ASSETS = [
   }
   `,
   {
-    id: "",
+    id: '',
   },
 ];
 
@@ -280,8 +280,8 @@ const REPO_TREE = [
   }
   `,
   {
-    owner: "",
-    name: "",
+    owner: '',
+    name: '',
   },
 ];
 
@@ -541,7 +541,7 @@ const MY_ISSUES = [
   ${QUERY_REPO}
   `,
   {
-    states: new Enum("OPEN", null),
+    states: new Enum('OPEN', null),
     cursor: null,
   },
 ];
@@ -613,8 +613,8 @@ const SEARCH = `
 const SEARCH_USER = [
   SEARCH,
   {
-    q: "",
-    type: "USER",
+    q: '',
+    type: 'USER',
     cursor: null,
   },
 ];
@@ -622,8 +622,8 @@ const SEARCH_USER = [
 const SEARCH_REPO = [
   SEARCH,
   {
-    q: "",
-    type: "REPOSITORY",
+    q: '',
+    type: 'REPOSITORY',
     cursor: null,
   },
 ];
@@ -631,8 +631,8 @@ const SEARCH_REPO = [
 const SEARCH_ISSUE = [
   SEARCH,
   {
-    q: "",
-    type: "ISSUE",
+    q: '',
+    type: 'ISSUE',
     cursor: null,
   },
 ];
@@ -665,7 +665,7 @@ const STAR = [
   }
   `,
   {
-    id: "",
+    id: '',
     unstar: false,
   },
 ];
@@ -696,8 +696,8 @@ const SUBSCRIBE = [
   }
   `,
   {
-    id: "",
-    state: new Enum("SUBSCRIBED", "UNSUBSCRIBED"),
+    id: '',
+    state: new Enum('SUBSCRIBED', 'UNSUBSCRIBED'),
   },
 ];
 
@@ -720,7 +720,7 @@ const FOLLOW = [
   `,
   {
     org: false,
-    id: "",
+    id: '',
   },
 ];
 
@@ -743,7 +743,7 @@ const UNFOLLOW = [
   `,
   {
     org: false,
-    id: "",
+    id: '',
   },
 ];
 
@@ -759,35 +759,17 @@ const CREATE_REPO = [
   ${QUERY_REPO}
   `,
   {
-    name: "",
-    visibility: "PUBLIC",
+    name: '',
+    visibility: 'PUBLIC',
   },
 ];
 
 export {
-  USER_REPOS,
-  REPO_ISSUES,
-  REPO_PRS,
-  REPO_RELEASES,
-  RELEASE_ASSETS,
-  REPO_TREE,
-  NODES,
-  ME,
-  MY_REPOS,
-  MY_WATCHING,
-  MY_STARS,
-  MY_LISTS,
-  // MY_GISTS,
-  MY_FOLLOWING,
-  MY_ISSUES,
-  MY_PRS,
-  MY_PROJECTS,
-  SEARCH_USER,
-  SEARCH_REPO,
-  SEARCH_ISSUE,
-  STAR,
-  SUBSCRIBE,
-  FOLLOW,
-  UNFOLLOW,
-  CREATE_REPO,
+    CREATE_REPO, FOLLOW, ME,
+    // MY_GISTS,
+    MY_FOLLOWING,
+    MY_ISSUES, MY_LISTS, MY_PROJECTS, MY_PRS, MY_REPOS, MY_STARS, MY_WATCHING, NODES, RELEASE_ASSETS, REPO_ISSUES,
+    REPO_PRS,
+    REPO_RELEASES, REPO_TREE, SEARCH_ISSUE, SEARCH_REPO, SEARCH_USER, STAR,
+    SUBSCRIBE, UNFOLLOW, USER_REPOS
 };

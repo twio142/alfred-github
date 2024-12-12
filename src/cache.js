@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-"use strict";
-import Database from "better-sqlite3";
-import { mkdirSync, writeFile, existsSync, unlinkSync, realpathSync } from "fs";
-import GitHub from "./github.js";
-import { spawn } from "child_process";
-import { fileURLToPath } from "url";
+'use strict';
+import Database from 'better-sqlite3';
+import { spawn } from 'child_process';
+import { existsSync, mkdirSync, realpathSync, unlinkSync, writeFile } from 'fs';
+import { fileURLToPath } from 'url';
+import GitHub from './github.js';
 
 class Cache {
   static #dbFile = `${process.env.alfred_workflow_data}/cache.db`;
@@ -12,21 +12,21 @@ class Cache {
   #enterprise = process.env.enterprise == 1;
   #accessToken = () =>
     this.#db
-      .prepare("SELECT value FROM configs WHERE key = 'accessToken'")
+      .prepare('SELECT value FROM configs WHERE key = \'accessToken\'')
       .get()?.value;
   #apiUrl = () => {
     if (this.#enterprise) {
       const url = this.#db
-        .prepare("SELECT value FROM configs WHERE key = 'enterpriseUrl'")
+        .prepare('SELECT value FROM configs WHERE key = \'enterpriseUrl\'')
         .get()?.value;
-      return url ? url.replace(/\/?$/, "/api/v3") : null;
+      return url ? url.replace(/\/?$/, '/api/v3') : null;
     } else {
-      return "https://api.github.com";
+      return 'https://api.github.com';
     }
   };
   #loggedIn = () => !!this.#accessToken() && !!this.#apiUrl();
   #username = () => {
-    const { data } = this.requestCache("ME");
+    const { data } = this.requestCache('ME');
     return data?.login;
   };
   #GitHub;
@@ -34,7 +34,7 @@ class Cache {
 
   constructor() {
     if (!process.env.alfred_workflow_data)
-      throw new Error("`alfred_workflow_data` not available.");
+      throw new Error('`alfred_workflow_data` not available.');
     mkdirSync(process.env.alfred_workflow_data, { recursive: true });
     mkdirSync(process.env.alfred_workflow_cache, { recursive: true });
     this.#db = new Database(Cache.#dbFile);
@@ -100,12 +100,12 @@ class Cache {
     console.error(action, options);
     id = parseInt(id) || null;
     prevId = parseInt(prevId) || null;
-    if (!this.#loggedIn()) throw new Error("Not logged in.");
+    if (!this.#loggedIn()) throw new Error('Not logged in.');
     const data = await this.#GitHub.request(action, options);
     if (Cache.#noCacheActions.includes(action)) {
       return { data };
     } else if (data) {
-      if (action === "ME") this.#cacheMyAvatar(data.avatarUrl);
+      if (action === 'ME') this.#cacheMyAvatar(data.avatarUrl);
       id = this.#cacheData(action, options, data, id, prevId, prevNodeId);
       return { data, id };
     } else {
@@ -155,10 +155,10 @@ class Cache {
   }
 
   #cacheMyAvatar(url) {
-    if (!existsSync("icons/me.png"))
-      spawn("curl", ["-o", "icons/me.png", url], {
+    if (!existsSync('icons/me.png'))
+      spawn('curl', ['-o', 'icons/me.png', url], {
         detached: true,
-        stdio: "ignore",
+        stdio: 'ignore',
       }).unref();
   }
 
@@ -209,14 +209,14 @@ class Cache {
    * @param {object} options
    * @param {number} id
    */
-  #cacheInBackground(action = "", options = {}, id = "") {
+  #cacheInBackground(action = '', options = {}, id = '') {
     if (!this.#loggedIn()) return;
     const child = spawn(
       fileURLToPath(import.meta.url),
       [action, JSON.stringify(options), String(id)],
       {
         detached: true,
-        stdio: "ignore",
+        stdio: 'ignore',
         env: process.env,
       },
     );
@@ -237,35 +237,35 @@ class Cache {
   }
 
   static #noCacheActions = [
-    "STAR",
-    "SUBSCRIBE",
-    "FOLLOW",
-    "UNFOLLOW",
-    "MARK_NOTIFICATION_AS_READ",
-    "UNSUBSCRIBE_NOTIFICATION",
-    "CREATE_REPO",
+    'STAR',
+    'SUBSCRIBE',
+    'FOLLOW',
+    'UNFOLLOW',
+    'MARK_NOTIFICATION_AS_READ',
+    'UNSUBSCRIBE_NOTIFICATION',
+    'CREATE_REPO',
   ];
 
   static myRelatedRepos = [
-    ["MY_REPOS", { multiPages: true }],
-    ["MY_STARS", { multiPages: true }],
-    ["MY_WATCHING", { multiPages: true }],
-    ["MY_ISSUES", { multiPages: true }],
-    ["MY_PRS", { multiPages: true }],
+    ['MY_REPOS', { multiPages: true }],
+    ['MY_STARS', { multiPages: true }],
+    ['MY_WATCHING', { multiPages: true }],
+    ['MY_ISSUES', { multiPages: true }],
+    ['MY_PRS', { multiPages: true }],
   ];
 
   static myResources = [
-    ["ME"],
-    ["MY_REPOS", { multiPages: true }],
-    ["MY_STARS", { multiPages: true }],
-    ["MY_LISTS", { multiPages: true }],
-    ["MY_WATCHING", { multiPages: true }],
-    ["MY_FOLLOWING", { multiPages: true }],
-    ["MY_ISSUES", { multiPages: true }],
-    ["MY_PRS", { multiPages: true }],
-    ["MY_GISTS", { multiPages: true }],
-    ["MY_STARRED_GISTS", { multiPages: true }],
-    ["MY_NOTIFICATIONS", { multiPages: true }],
+    ['ME'],
+    ['MY_REPOS', { multiPages: true }],
+    ['MY_STARS', { multiPages: true }],
+    ['MY_LISTS', { multiPages: true }],
+    ['MY_WATCHING', { multiPages: true }],
+    ['MY_FOLLOWING', { multiPages: true }],
+    ['MY_ISSUES', { multiPages: true }],
+    ['MY_PRS', { multiPages: true }],
+    ['MY_GISTS', { multiPages: true }],
+    ['MY_STARRED_GISTS', { multiPages: true }],
+    ['MY_NOTIFICATIONS', { multiPages: true }],
   ];
 
   async refresh(force = !1) {
@@ -277,10 +277,10 @@ class Cache {
 
   clearCache(all = !1) {
     if (all) {
-      this.#db.exec("DELETE FROM cache;");
+      this.#db.exec('DELETE FROM cache;');
     } else {
       this.#db.exec(
-        `DELETE FROM cache WHERE timestamp < DATETIME('now', '-1 day');`,
+        'DELETE FROM cache WHERE timestamp < DATETIME(\'now\', \'-1 day\');',
       );
     }
   }
@@ -317,14 +317,14 @@ class Cache {
   get baseUrl() {
     return this.#enterprise
       ? this.#db
-          .prepare("SELECT value FROM configs WHERE key = 'enterpriseUrl'")
-          .get()
-          ?.value?.replace(/\/$/, "")
-      : "https://github.com";
+        .prepare('SELECT value FROM configs WHERE key = \'enterpriseUrl\'')
+        .get()
+        ?.value?.replace(/\/$/, '')
+      : 'https://github.com';
   }
 
   set baseUrl(url) {
-    url = url.replace(/\/$/, "");
+    url = url.replace(/\/$/, '');
     if (this.#enterprise) {
       this.#db
         .prepare(
@@ -338,7 +338,7 @@ class Cache {
       if (this.#loggedIn())
         this.#GitHub = new GitHub({
           auth: this.#accessToken(),
-          baseUrl: url + "/api/v3",
+          baseUrl: url + '/api/v3',
         });
     }
   }
@@ -346,9 +346,9 @@ class Cache {
   get gistUrl() {
     return this.#enterprise
       ? this.#db
-          .prepare("SELECT value FROM configs WHERE key = 'gistUrl'")
-          .get()?.value
-      : "https://gist.github.com";
+        .prepare('SELECT value FROM configs WHERE key = \'gistUrl\'')
+        .get()?.value
+      : 'https://gist.github.com';
   }
 
   set gistUrl(url) {
@@ -374,7 +374,7 @@ export default Cache;
 
 if (fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
   const cache = new Cache();
-  if (process.argv[2] === "clear") {
+  if (process.argv[2] === 'clear') {
     cache.clearCache();
   } else if (process.argv[2]) {
     cache.requestAPI(

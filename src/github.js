@@ -1,19 +1,19 @@
-"use strict";
+'use strict';
 // https://docs.github.com/en/rest
 // https://github.com/octokit/core.js
 
-import { Octokit } from "@octokit/core";
-import { paginateRest } from "@octokit/plugin-paginate-rest";
-import { paginateGraphQL } from "@octokit/plugin-paginate-graphql";
-import fetch from "node-fetch";
-import * as GQL from "./graphql.js";
-import { Enum } from "./utils.js";
+import { Octokit } from '@octokit/core';
+import { paginateGraphQL } from '@octokit/plugin-paginate-graphql';
+import { paginateRest } from '@octokit/plugin-paginate-rest';
+import fetch from 'node-fetch';
+import * as GQL from './graphql.js';
+import { Enum } from './utils.js';
 
 const MyOctokit = Octokit.plugin(paginateRest, paginateGraphQL);
 
 class GitHub {
   #Octokit;
-  static headers = { "X-Github-Next-Global-ID": 1 };
+  static headers = { 'X-Github-Next-Global-ID': 1 };
   // #debug = !!process.env.alfred_debug;
 
   constructor({ auth, baseUrl }) {
@@ -22,22 +22,22 @@ class GitHub {
 
   static #REST = {
     MY_NOTIFICATIONS: [
-      "GET /notifications",
+      'GET /notifications',
       { all: false, per_page: 100 },
       // all (also show those marked as read): true / false (*)
     ],
     MARK_NOTIFICATION_AS_READ: [
-      "PATCH /notifications/threads/{thread_id}",
-      { thread_id: "" },
+      'PATCH /notifications/threads/{thread_id}',
+      { thread_id: '' },
     ],
     UNSUBSCRIBE_NOTIFICATION: [
-      "DELETE /notifications/threads/{thread_id}/subscription",
-      { thread_id: "" },
+      'DELETE /notifications/threads/{thread_id}/subscription',
+      { thread_id: '' },
     ],
-    MY_GISTS: ["GET /gists", { per_page: 100 }],
-    MY_STARRED_GISTS: ["GET /gists/starred", { per_page: 100 }],
-    SEARCH_TOPIC: ["GET /search/topics", { q: "", per_page: 20 }],
-    MY_CODESPACES: ["GET /user/codespaces", { per_page: 100 }],
+    MY_GISTS: ['GET /gists', { per_page: 100 }],
+    MY_STARRED_GISTS: ['GET /gists/starred', { per_page: 100 }],
+    SEARCH_TOPIC: ['GET /search/topics', { q: '', per_page: 20 }],
+    MY_CODESPACES: ['GET /user/codespaces', { per_page: 100 }],
   };
 
   static #GQL = GQL;
@@ -64,11 +64,11 @@ class GitHub {
         if (data?.total_count !== undefined && Array.isArray(data.items))
           data = data.items;
       }
-      if (action === "MY_NOTIFICATIONS") {
+      if (action === 'MY_NOTIFICATIONS') {
         data = await Promise.all(data.map((d) => this.#getNotifications(d)));
-      } else if (["MY_GISTS", "MY_STARRED_GISTS"].includes(action)) {
+      } else if (['MY_GISTS', 'MY_STARRED_GISTS'].includes(action)) {
         data = GitHub.#tidyGists(data);
-      } else if (action === "MY_CODESPACES") {
+      } else if (action === 'MY_CODESPACES') {
         data = data.map(
           ({
             name,
@@ -106,7 +106,7 @@ class GitHub {
       } else {
         data = await this.#Octokit.graphql(...ACTION);
       }
-      if (action === "REPO_TREE") {
+      if (action === 'REPO_TREE') {
         data = await this.#getTree(data);
       } else {
         while (
@@ -155,17 +155,17 @@ class GitHub {
           `GET ${new URL(data.repository.url).pathname}`,
         )
       ).data.html_url;
-      if (type == "Discussion") html_url += `/discussions`;
+      if (type == 'Discussion') html_url += '/discussions';
     }
-    if (type == "PullRequest") {
-      state = subject.merged_at ? "merged" : subject.state;
+    if (type == 'PullRequest') {
+      state = subject.merged_at ? 'merged' : subject.state;
       tag = subject.number;
-    } else if (type == "Issue") {
+    } else if (type == 'Issue') {
       state = subject.state;
       tag = subject.number;
-    } else if (type == "Release") {
+    } else if (type == 'Release') {
       tag = subject.tag_name;
-    } else if (type == "Discussion") {
+    } else if (type == 'Discussion') {
       tag = subject.number;
     }
     return {

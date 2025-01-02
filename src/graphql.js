@@ -408,30 +408,25 @@ const MY_STARS = [
   },
 ];
 
-const QUERY_LIST = [
-  `
-  fragment queryList on UserList {
-    name
-    description
-    id
-    isPrivate
-    updatedAt
-    user {
-      login
-    }
-    items(first: 50, after: $cursor) {
-      totalCount
-      nodes {
-        ... on Repository {
-          id
-        }
+const QUERY_LIST = `
+fragment queryList on UserList {
+  name
+  description
+  id
+  isPrivate
+  updatedAt
+  user {
+    login
+  }
+  items(first: 50, after: $cursor) {
+    totalCount
+    nodes {
+      ... on Repository {
+        id
       }
     }
-  }`,
-  {
-    cursor: null,
-  },
-];
+  }
+}`;
 
 const MY_LISTS = [
   `
@@ -765,11 +760,11 @@ const CREATE_REPO = [
 ];
 
 export {
-    CREATE_REPO, FOLLOW, ME,
-    // MY_GISTS,
-    MY_FOLLOWING,
-    MY_ISSUES, MY_LISTS, MY_PROJECTS, MY_PRS, MY_REPOS, MY_STARS, MY_WATCHING, NODES, RELEASE_ASSETS, REPO_ISSUES,
-    REPO_PRS,
-    REPO_RELEASES, REPO_TREE, SEARCH_ISSUE, SEARCH_REPO, SEARCH_USER, STAR,
-    SUBSCRIBE, UNFOLLOW, USER_REPOS
+  CREATE_REPO, FOLLOW, ME,
+  // MY_GISTS,
+  MY_FOLLOWING,
+  MY_ISSUES, MY_LISTS, MY_PROJECTS, MY_PRS, MY_REPOS, MY_STARS, MY_WATCHING, NODES, RELEASE_ASSETS, REPO_ISSUES,
+  REPO_PRS,
+  REPO_RELEASES, REPO_TREE, SEARCH_ISSUE, SEARCH_REPO, SEARCH_USER, STAR,
+  SUBSCRIBE, UNFOLLOW, USER_REPOS
 };

@@ -165,6 +165,7 @@ fragment queryPR on PullRequest {
   }
   updatedAt
   mergedAt
+  isDraft
   number
   repository {
     ...queryRepo

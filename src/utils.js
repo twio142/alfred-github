@@ -4,14 +4,15 @@ import { spawnSync } from 'child_process';
 function matchStr(str) {
   return str
     .toLowerCase()
-    .split(/[^a-zA-Z0-9]/)
+    .split(/[^a-z0-9]/i)
     .concat(str.toLowerCase())
     .filter(Boolean)
     .join(' ');
 }
 
 function convertSize(b) {
-  if (isNaN(b)) return '';
+  if (Number.isNaN(b))
+    return '';
   for (const unit of ['', 'K', 'M', 'G']) {
     if (b < 1024.0) {
       return `${b.toFixed(1)} ${unit}B`;
@@ -47,26 +48,27 @@ function datetimeFormat(date) {
   } else if (date.getFullYear() === new Date().getFullYear()) {
     // within the same year
     return (
-      date.getDate() + ' ' + date.toLocaleString('default', { month: 'short' })
+      `${date.getDate()} ${date.toLocaleString('default', { month: 'short' })}`
     );
   } else {
     return (
-      date.getDate() +
-      ' ' +
-      date.toLocaleString('default', { month: 'short' }) +
-      ' ' +
-      date.getFullYear()
+      `${date.getDate()
+      } ${
+        date.toLocaleString('default', { month: 'short' })
+      } ${
+        date.getFullYear()}`
     );
   }
 }
 
 function convertNum(num) {
-  if (!num) return null;
+  if (!num)
+    return null;
   return num < 1e3
     ? num
     : num < 1e6
-      ? (num / 1e3).toFixed(1) + 'k'
-      : (num / 1e6).toFixed(1) + 'm';
+      ? `${(num / 1e3).toFixed(1)}k`
+      : `${(num / 1e6).toFixed(1)}m`;
 }
 
 function notify(message, subtitle = '') {
@@ -84,10 +86,6 @@ function notify(message, subtitle = '') {
   ]);
 }
 
-class Enum extends Array {
-  constructor(...args) {
-    super(...args);
-  }
-}
+class Enum extends Array {}
 
 export { convertNum, convertSize, datetimeFormat, Enum, matchStr, notify };

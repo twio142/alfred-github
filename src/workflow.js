@@ -6,11 +6,11 @@ class Workflow {
   // #debug = !!process.env.alfred_debug;
 
   filter(str = '') {
-    this.items = this.items.filter((item) =>
+    this.items = this.items.filter(item =>
       (item.match || item.title)
         .toLowerCase()
         .split(' ')
-        .find((x) => x.startsWith(str.toLowerCase())),
+        .find(x => x.startsWith(str.toLowerCase())),
     );
   }
 

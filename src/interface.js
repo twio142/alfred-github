@@ -16,7 +16,7 @@ import Workflow from './workflow.js';
 class Interface {
   Workflow;
   #Cache;
-  #enterprise = process.env.enterprise == 1;
+  #enterprise = process.env.enterprise === '1';
   #prevId = 'main';
   #prevNodeId;
   #debug = !!process.env.alfred_debug;
@@ -32,7 +32,7 @@ class Interface {
     } else {
       this.#Cache.refreshInBackground();
     }
-    if (parseInt(process.env.back)) {
+    if (Number.parseInt(process.env.back)) {
       if (this.#debug)
         console.error(1, process.env.back, process.env.prevNodeId);
       const row = this.#Cache.requestCacheById(process.env.back);
@@ -52,22 +52,24 @@ class Interface {
         await this.mainMenu();
       }
     } else if (process.env.action?.startsWith('SEARCH_')) {
-      if (this.#debug) console.error(2, process.env.action);
+      if (this.#debug)
+        console.error(2, process.env.action);
       if (process.env.queryPrefix)
-        input = process.env.queryPrefix + ' ' + input;
+        input = `${process.env.queryPrefix} ${input}`;
       this.#prevId = process.env.prevId || this.#prevId;
       this.#prevNodeId = process.env.prevNodeId;
       await this.search(input, process.env.action);
-    } else if (process.env.action == 'CREATE_REPO') {
+    } else if (process.env.action === 'CREATE_REPO') {
       await this.createRepo(input);
     } else if (process.env.action) {
-      if (this.#debug)
+      if (this.#debug) {
         console.error(
           3,
           process.env.action,
           process.env.prevId,
           process.env.prevNodeId,
         );
+      }
       const action = process.env.action;
       this.#prevId = process.env.prevId || this.#prevId;
       this.#prevNodeId = process.env.prevNodeId;
@@ -91,12 +93,12 @@ class Interface {
       } catch (e) {
         console.error(e.message);
         if (process.env.execute) {
-          return notify('Error: ' + e.message);
+          return notify(`Error: ${e.message}`);
         } else {
-          this.Workflow.warnEmpty('Error: ' + e.message);
+          this.Workflow.warnEmpty(`Error: ${e.message}`);
         }
       }
-    } else if (process.env.prevNodeId && parseInt(process.env.prevId)) {
+    } else if (process.env.prevNodeId && Number.parseInt(process.env.prevId)) {
       if (this.#debug)
         console.error(4, process.env.prevId, process.env.prevNodeId);
       this.#prevId = process.env.prevId;
@@ -104,20 +106,24 @@ class Interface {
       this.Workflow.setVar('prevId', '');
       await this.subMenu(input);
     } else if (process.env.command) {
-      if (this.#debug) console.error(5, process.env.command);
+      if (this.#debug)
+        console.error(5, process.env.command);
       return this.runCommand(process.env.command, input);
     } else if (process.env.config) {
-      if (this.#debug) console.error(6, process.env.config);
+      if (this.#debug)
+        console.error(6, process.env.config);
       this.config(input);
     } else if (input.startsWith('.')) {
-      if (this.#debug) console.error(7);
+      if (this.#debug)
+        console.error(7);
       this.myMenu();
       this.Workflow.filter(input.slice(1));
     } else if (this.#Cache.loggedIn) {
-      if (this.#debug) console.error(8);
+      if (this.#debug)
+        console.error(8);
       await this.mainMenu(input);
     }
-    if (this.#prevId)
+    if (this.#prevId) {
       this.Workflow.addItem({
         title: 'Back',
         icon: { path: 'icons/back.png' },
@@ -127,6 +133,7 @@ class Interface {
           action: '',
         },
       });
+    }
     return this.Workflow.output();
   }
 
@@ -383,20 +390,20 @@ class Interface {
         return {};
       }),
     );
-    let repos = [];
+    const repos = [];
     (await Promise.all(promises))
-      .map((p) => p.data?.map((node) => ({ ...node, prevId: p.id })) || [])
+      .map(p => p.data?.map(node => ({ ...node, prevId: p.id })) || [])
       .flat()
-      .map((node) =>
+      .map(node =>
         node.id.startsWith('R_')
           ? node
           : { ...node.repository, prevId: node.prevId },
       )
       .forEach(
-        (node) => repos.find((n) => n.id === node.id) || repos.push(node),
+        node => repos.find(n => n.id === node.id) || repos.push(node),
       );
     repos.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-    repos.forEach((repo) => this.formatOutput([repo], repo.prevId));
+    repos.forEach(repo => this.formatOutput([repo], repo.prevId));
   }
 
   async mainMenu(input) {
@@ -478,7 +485,8 @@ class Interface {
   }
 
   async search(q, action = 'SEARCH_REPO') {
-    if (!action.startsWith('SEARCH_')) throw new Error('Invalid action.');
+    if (!action.startsWith('SEARCH_'))
+      throw new Error('Invalid action.');
     try {
       const { data, id } = await this.#Cache.request(
         action,
@@ -489,13 +497,13 @@ class Interface {
       );
       this.formatOutput(data, id);
     } catch (e) {
-      this.Workflow.warnEmpty('Error: ' + e.message);
+      this.Workflow.warnEmpty(`Error: ${e.message}`);
     }
   }
 
   /**
    * format output based on node type
-   * @param {array} nodes
+   * @param {Array} nodes
    * @param {number} id
    */
   formatOutput(nodes, id) {
@@ -529,14 +537,14 @@ class Interface {
   }
 
   #formatRepo(repo, id) {
-    const name = repo.nameWithOwner,
-      starred = repo.viewerHasStarred ? '􀋂' : '',
-      watched = repo.viewerSubscription === 'SUBSCRIBED' ? '􀋙' : '';
-    const lang = repo.primaryLanguage?.name,
-      stars = convertNum(repo.stargazerCount),
-      updated = datetimeFormat(repo.updatedAt),
-      fork = repo.parent ? `􀙠 ${repo.parent.nameWithOwner}` : '';
-    const title = [name + ' ', starred, watched].filter(Boolean).join(' ');
+    const name = repo.nameWithOwner;
+    const starred = repo.viewerHasStarred ? '􀋂' : '';
+    const watched = repo.viewerSubscription === 'SUBSCRIBED' ? '􀋙' : '';
+    const lang = repo.primaryLanguage?.name;
+    const stars = convertNum(repo.stargazerCount);
+    const updated = datetimeFormat(repo.updatedAt);
+    const fork = repo.parent ? `􀙠 ${repo.parent.nameWithOwner}` : '';
+    const title = [`${name} `, starred, watched].filter(Boolean).join(' ');
     const subtitle = [lang, stars ? `􀋂 ${stars}` : '', updated, fork]
       .filter(Boolean)
       .join(' · ');
@@ -567,12 +575,12 @@ class Interface {
   }
 
   #formatUser(user, id) {
-    const name = `${user.login}${user.name ? `  (${user.name}) ` : ''}`,
-      followed = user.viewerIsFollowing ? '􀋭' : '',
-      verified = user.isVerified ? '􀇺' : '';
+    const name = `${user.login}${user.name ? `  (${user.name}) ` : ''}`;
+    const followed = user.viewerIsFollowing ? '􀋭' : '';
+    const verified = user.isVerified ? '􀇺' : '';
     const title = [name, verified, followed].filter(Boolean).join(' ');
-    const followers = convertNum(user.followers?.totalCount),
-      repos = convertNum(user.repositories.totalCount);
+    const followers = convertNum(user.followers?.totalCount);
+    const repos = convertNum(user.repositories.totalCount);
     const subtitle = [
       followers ? `􀉬 ${followers}` : '',
       repos ? `􀤞 ${repos}` : '',
@@ -628,7 +636,7 @@ class Interface {
       mods: {
         cmd: {
           subtitle: 'Copy raw URL(s)',
-          arg: gist.files.map((f) => f.url),
+          arg: gist.files.map(f => f.url),
           variables: { execute: 'copy' },
         },
         alt: { subtitle: gist.description || '', valid: !1 },
@@ -649,7 +657,7 @@ class Interface {
       variables: {
         action: 'NODES',
         options: JSON.stringify({
-          ids: list.items.nodes.map((n) => n.id),
+          ids: list.items.nodes.map(n => n.id),
         }),
         prevId: id,
       },
@@ -664,8 +672,8 @@ class Interface {
     const title = `${issue.title}  ${
       issue.viewerSubscription === 'SUBSCRIBED' ? '􀋙' : ''
     }`;
-    const comments = convertNum(issue.comments.totalCount),
-      updated = datetimeFormat(issue.updatedAt);
+    const comments = convertNum(issue.comments.totalCount);
+    const updated = datetimeFormat(issue.updatedAt);
     const subtitle = [
       `${issue.repository.nameWithOwner} #${issue.number}`,
       updated,
@@ -691,8 +699,8 @@ class Interface {
   }
 
   #formatRelease(release, id) {
-    const tag =
-      release.tagName && release.tagName !== release.name
+    const tag
+      = release.tagName && release.tagName !== release.name
         ? ` (􀋡 ${release.tagName})`
         : '';
     const title = `${release.name}${tag}  ${release.isPrerelease ? '🚧' : ''}`;
@@ -761,7 +769,7 @@ class Interface {
       quicklookurl: url,
       match: matchStr(path),
       valid: type === 'blob',
-      autocomplete: type === 'tree' ? path + '/' : undefined,
+      autocomplete: type === 'tree' ? `${path}/` : undefined,
       arg: type === 'blob' ? url.replace('/blob/', '/raw/') : undefined,
       variables: { execute: 'open_link' },
       icon: { path: `icons/${type === 'tree' ? 'folder' : 'file'}.png` },
@@ -769,8 +777,8 @@ class Interface {
   }
 
   #formatNotification(notification) {
-    const { title, url, repo, updated_at, tag, thread_id, type, state } =
-      notification;
+    const { title, url, repo, updated_at, tag, thread_id, type, state }
+      = notification;
     const icon = ['Issue', 'PullRequest'].includes(type)
       ? `${type.toLowerCase()}_${state}`
       : type.toLowerCase();
@@ -820,8 +828,8 @@ class Interface {
   }
 
   #formatCodespace(codespace) {
-    const { name, state, repository, url, git_status, last_used_at } =
-      codespace;
+    const { name, state, repository, url, git_status, last_used_at }
+      = codespace;
     this.Workflow.addItem({
       title: `${repository}  ·  􀙠 ${git_status.ref}`,
       subtitle: `${state}, 􀣔 ${datetimeFormat(last_used_at)}`,
@@ -866,10 +874,10 @@ class Interface {
   async subMenu() {
     const nodes = this.#Cache.requestCacheById(this.#prevId)?.data;
     try {
-      const node =
-        nodes?.find((n) => n.id === this.#prevNodeId) ||
-        (await this.#Cache.request('NODES', { ids: [this.#prevNodeId] }))
-          .data?.[0];
+      const node
+        = nodes?.find(n => n.id === this.#prevNodeId)
+          || (await this.#Cache.request('NODES', { ids: [this.#prevNodeId] }))
+            .data?.[0];
       if (this.#prevNodeId.startsWith('R_')) {
         this.#repoMenu(node);
       } else {
@@ -877,7 +885,7 @@ class Interface {
       }
       this.Workflow.setVar('prevNodeId', '');
     } catch (e) {
-      this.Workflow.warnEmpty('Error: ' + e.message);
+      this.Workflow.warnEmpty(`Error: ${e.message}`);
     }
   }
 
@@ -902,19 +910,19 @@ class Interface {
       mods: {
         cmd: repo.hasWikiEnabled
           ? {
-            subtitle: 'Open wiki',
-            variables: { execute: 'open_link' },
-            arg: `${repo.url}/wiki`,
-            icon: { path: 'icons/wiki.png' },
-          }
+              subtitle: 'Open wiki',
+              variables: { execute: 'open_link' },
+              arg: `${repo.url}/wiki`,
+              icon: { path: 'icons/wiki.png' },
+            }
           : undefined,
         alt: repo.homepageUrl
           ? {
-            subtitle: 'Open homepage',
-            variables: { execute: 'open_link' },
-            arg: repo.homepageUrl,
-            icon: { path: 'icons/website.png' },
-          }
+              subtitle: 'Open homepage',
+              variables: { execute: 'open_link' },
+              arg: repo.homepageUrl,
+              icon: { path: 'icons/website.png' },
+            }
           : undefined,
         shift: {
           subtitle: 'Copy SSH url',
@@ -937,65 +945,65 @@ class Interface {
       quicklookurl: repo.url.replace(`/${name}`, ''),
       variables: { prevNodeId: repo.owner.id, prevId: -1 },
     });
-    repo.issues.totalCount &&
-      this.Workflow.addItem({
-        title: 'Issues',
-        subtitle: `${repo.issues.totalCount} issue${
-          repo.issues.totalCount > 1 ? 's' : ''
-        }`,
-        icon: { path: 'icons/issue.png' },
-        match: 'issues',
-        quicklookurl: `${repo.url}/issues`,
-        variables: {
-          action: 'SEARCH_ISSUE',
-          queryPrefix: `repo:${repo.nameWithOwner} state:open, type:issue`,
-          prevId: this.#prevId,
-          prevNodeId: this.#prevNodeId,
+    repo.issues.totalCount
+    && this.Workflow.addItem({
+      title: 'Issues',
+      subtitle: `${repo.issues.totalCount} issue${
+        repo.issues.totalCount > 1 ? 's' : ''
+      }`,
+      icon: { path: 'icons/issue.png' },
+      match: 'issues',
+      quicklookurl: `${repo.url}/issues`,
+      variables: {
+        action: 'SEARCH_ISSUE',
+        queryPrefix: `repo:${repo.nameWithOwner} state:open, type:issue`,
+        prevId: this.#prevId,
+        prevNodeId: this.#prevNodeId,
+      },
+      mods: {
+        cmd: {
+          subtitle: 'Open in browser',
+          variables: { execute: 'open_link' },
+          arg: `${repo.url}/issues`,
         },
-        mods: {
-          cmd: {
-            subtitle: 'Open in browser',
-            variables: { execute: 'open_link' },
-            arg: `${repo.url}/issues`,
-          },
+      },
+    });
+    repo.pullRequests.totalCount
+    && this.Workflow.addItem({
+      title: 'Pull Requests',
+      subtitle: `${repo.pullRequests.totalCount} pull request${
+        repo.pullRequests.totalCount > 1 ? 's' : ''
+      }`,
+      icon: { path: 'icons/pullRequest.png' },
+      match: 'prs pull requests',
+      quicklookurl: `${repo.url}/pulls`,
+      variables: {
+        action: 'SEARCH_ISSUE',
+        queryPrefix: `repo:${repo.nameWithOwner} state:open, type:pr`,
+        prevId: this.#prevId,
+        prevNodeId: this.#prevNodeId,
+      },
+      mods: {
+        cmd: {
+          subtitle: 'Open in browser',
+          variables: { execute: 'open_link' },
+          arg: `${repo.url}/pulls`,
         },
-      });
-    repo.pullRequests.totalCount &&
-      this.Workflow.addItem({
-        title: 'Pull Requests',
-        subtitle: `${repo.pullRequests.totalCount} pull request${
-          repo.pullRequests.totalCount > 1 ? 's' : ''
-        }`,
-        icon: { path: 'icons/pullRequest.png' },
-        match: 'prs pull requests',
-        quicklookurl: `${repo.url}/pulls`,
-        variables: {
-          action: 'SEARCH_ISSUE',
-          queryPrefix: `repo:${repo.nameWithOwner} state:open, type:pr`,
-          prevId: this.#prevId,
-          prevNodeId: this.#prevNodeId,
-        },
-        mods: {
-          cmd: {
-            subtitle: 'Open in browser',
-            variables: { execute: 'open_link' },
-            arg: `${repo.url}/pulls`,
-          },
-        },
-      });
-    repo.releases.totalCount &&
-      this.Workflow.addItem({
-        title: 'Releases',
-        icon: { path: 'icons/release.png' },
-        match: 'releases',
-        quicklookurl: `${repo.url}/releases`,
-        variables: {
-          action: 'REPO_RELEASES',
-          options: JSON.stringify({ owner, name }),
-          prevId: this.#prevId,
-          prevNodeId: this.#prevNodeId,
-        },
-      });
+      },
+    });
+    repo.releases.totalCount
+    && this.Workflow.addItem({
+      title: 'Releases',
+      icon: { path: 'icons/release.png' },
+      match: 'releases',
+      quicklookurl: `${repo.url}/releases`,
+      variables: {
+        action: 'REPO_RELEASES',
+        options: JSON.stringify({ owner, name }),
+        prevId: this.#prevId,
+        prevNodeId: this.#prevNodeId,
+      },
+    });
     this.Workflow.addItem({
       title: 'Tree',
       icon: { path: 'icons/tree.png' },
@@ -1083,50 +1091,50 @@ class Interface {
       mods: {
         cmd: user.websiteUrl
           ? {
-            subtitle: 'Open website',
-            variables: { execute: 'open_link' },
-            arg: user.websiteUrl,
-            icon: { path: 'icons/website.png' },
-          }
+              subtitle: 'Open website',
+              variables: { execute: 'open_link' },
+              arg: user.websiteUrl,
+              icon: { path: 'icons/website.png' },
+            }
           : undefined,
       },
     });
-    user.repositories.totalCount &&
-      this.Workflow.addItem({
-        title: 'Repositories',
-        subtitle: `${user.repositories.totalCount} repo${
-          user.repositories.totalCount > 1 ? 's' : ''
-        }`,
-        icon: { path: 'icons/repo.png' },
-        match: 'repos',
-        variables: {
-          action: 'SEARCH_REPO',
-          queryPrefix: `${user.id.startsWith('U') ? 'user' : 'org'}:${user.login}`,
-          prevId: this.#prevId,
-          prevNodeId: this.#prevNodeId,
+    user.repositories.totalCount
+    && this.Workflow.addItem({
+      title: 'Repositories',
+      subtitle: `${user.repositories.totalCount} repo${
+        user.repositories.totalCount > 1 ? 's' : ''
+      }`,
+      icon: { path: 'icons/repo.png' },
+      match: 'repos',
+      variables: {
+        action: 'SEARCH_REPO',
+        queryPrefix: `${user.id.startsWith('U') ? 'user' : 'org'}:${user.login}`,
+        prevId: this.#prevId,
+        prevNodeId: this.#prevNodeId,
+      },
+      mods: {
+        cmd: {
+          subtitle: 'Open in browser',
+          variables: { execute: 'open_link' },
+          arg: `${user.url}?tab=repositories`,
         },
-        mods: {
-          cmd: {
-            subtitle: 'Open in browser',
-            variables: { execute: 'open_link' },
-            arg: `${user.url}?tab=repositories`,
-          },
-        },
-      });
-    user.isViewer ||
-      this.Workflow.addItem({
-        title: user.viewerIsFollowing ? 'Unfollow User' : 'Follow User',
-        icon: { path: 'icons/follow.png' },
-        match: 'follow',
-        variables: {
-          execute: 'action',
-          action: user.viewerIsFollowing ? 'UNFOLLOW' : 'FOLLOW',
-          options: JSON.stringify({
-            id: user.id,
-            org: user.id.startsWith('O'),
-          }),
-        },
-      });
+      },
+    });
+    user.isViewer
+    || this.Workflow.addItem({
+      title: user.viewerIsFollowing ? 'Unfollow User' : 'Follow User',
+      icon: { path: 'icons/follow.png' },
+      match: 'follow',
+      variables: {
+        execute: 'action',
+        action: user.viewerIsFollowing ? 'UNFOLLOW' : 'FOLLOW',
+        options: JSON.stringify({
+          id: user.id,
+          org: user.id.startsWith('O'),
+        }),
+      },
+    });
     this.#prevNodeId = null;
   }
 
@@ -1134,16 +1142,16 @@ class Interface {
     const options = JSON.parse(process.env.options || '{}');
     if (!options.name) {
       const nameWithOwner = `${this.#Cache.username}/${input}`;
-      let valid =
-        /^[\w-\.]{1,100}$/.test(input) && !/^[\.-]|[\.-]$|--/.test(input);
-      let message =
-        input.length == 0 || valid ? '' : '􀇾 Invalid repository name';
+      let valid
+        = /^[\w\-.]{1,100}$/.test(input) && !/^[.-]|[.-]$|--/.test(input);
+      let message
+        = input.length === 0 || valid ? '' : '􀇾 Invalid repository name';
       if (valid) {
         try {
           const { data: myRepos } = await this.#Cache.requestCache('MY_REPOS', {
             multiPages: true,
           });
-          if (myRepos.find((r) => r.nameWithOwner === nameWithOwner)) {
+          if (myRepos.find(r => r.nameWithOwner === nameWithOwner)) {
             valid = !1;
             message = '􀇾 Repository already exists';
           }
@@ -1172,16 +1180,16 @@ class Interface {
             subtitle: 'Open in browser',
             arg: `https://github.com/new?name=${encodeURIComponent(input)}`,
             variables: { execute: 'open_link' },
-          }
+          },
         },
       });
     } else {
       try {
-        const {data} = await this.#Cache.request('CREATE_REPO', options);
+        const { data } = await this.#Cache.request('CREATE_REPO', options);
         this.#repoMenu(data);
       } catch (e) {
         console.error(e.message);
-        this.Workflow.warnEmpty('Error: ' + e.message);
+        this.Workflow.warnEmpty(`Error: ${e.message}`);
       }
     }
   }
@@ -1193,38 +1201,38 @@ class Interface {
 
   runCommand(command, input) {
     switch (command) {
-    case 'set_enterprise_url':
-      this.#Cache.baseUrl = input;
-      notify('Enterprise URL set', input);
-      break;
-    case 'del_enterprise_url':
-      this.#Cache.baseUrl = '';
-      notify('Enterprise URL deleted');
-      break;
-    case 'set_gist_url':
-      this.#Cache.gistUrl = input;
-      notify('Gist URL set', input);
-      break;
-    case 'del_gist_url':
-      this.#Cache.gistUrl = '';
-      notify('Gist URL deleted');
-      break;
-    case 'set_access_token':
-      this.#Cache.accessToken = input;
-      notify('Personal Access Token set');
-      break;
-    case 'del_access_token':
-      this.#Cache.accessToken = '';
-      notify('Personal Access Token deleted');
-      break;
-    case 'clear_cache':
-      this.#Cache.clearCache(!0);
-      notify('Cache cleared');
-      break;
-    case 'copy_keys':
-      this.#copyKeys();
-      notify('Public keys copied');
-      break;
+      case 'set_enterprise_url':
+        this.#Cache.baseUrl = input;
+        notify('Enterprise URL set', input);
+        break;
+      case 'del_enterprise_url':
+        this.#Cache.baseUrl = '';
+        notify('Enterprise URL deleted');
+        break;
+      case 'set_gist_url':
+        this.#Cache.gistUrl = input;
+        notify('Gist URL set', input);
+        break;
+      case 'del_gist_url':
+        this.#Cache.gistUrl = '';
+        notify('Gist URL deleted');
+        break;
+      case 'set_access_token':
+        this.#Cache.accessToken = input;
+        notify('Personal Access Token set');
+        break;
+      case 'del_access_token':
+        this.#Cache.accessToken = '';
+        notify('Personal Access Token deleted');
+        break;
+      case 'clear_cache':
+        this.#Cache.clearCache(!0);
+        notify('Cache cleared');
+        break;
+      case 'copy_keys':
+        this.#copyKeys();
+        notify('Public keys copied');
+        break;
     }
   }
 
@@ -1292,32 +1300,32 @@ class Interface {
 
   notifyAction(action, data) {
     switch (action) {
-    case 'MARK_NOTIFICATION_AS_READ':
-      notify('Notification marked as read');
-      break;
-    case 'STAR': {
-      const name = data.nameWithOwner || data.name;
-      notify(`${data.viewerHasStarred ? 'Starred' : 'Unstarred'} ${name}`);
-      break;
-    }
-    case 'SUBSCRIBE': {
-      const name =
-          data.nameWithOwner ||
-          `${data.repository.nameWithOwner} #${data.number}`;
-      notify(
-        `${
-          data.viewerSubscription === 'SUBSCRIBED' ? 'Watching' : 'Unwatched'
-        } ${name}`,
-      );
-      break;
-    }
-    case 'FOLLOW':
-    case 'UNFOLLOW': {
-      notify(
-        `${data.viewerIsFollowing ? 'Following' : 'Unfollowed'} ${data.login}`,
-      );
-      break;
-    }
+      case 'MARK_NOTIFICATION_AS_READ':
+        notify('Notification marked as read');
+        break;
+      case 'STAR': {
+        const name = data.nameWithOwner || data.name;
+        notify(`${data.viewerHasStarred ? 'Starred' : 'Unstarred'} ${name}`);
+        break;
+      }
+      case 'SUBSCRIBE': {
+        const name
+          = data.nameWithOwner
+            || `${data.repository.nameWithOwner} #${data.number}`;
+        notify(
+          `${
+            data.viewerSubscription === 'SUBSCRIBED' ? 'Watching' : 'Unwatched'
+          } ${name}`,
+        );
+        break;
+      }
+      case 'FOLLOW':
+      case 'UNFOLLOW': {
+        notify(
+          `${data.viewerIsFollowing ? 'Following' : 'Unfollowed'} ${data.login}`,
+        );
+        break;
+      }
     }
     this.#Cache.refresh(!0);
   }

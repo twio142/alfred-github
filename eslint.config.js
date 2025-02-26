@@ -1,11 +1,13 @@
-export default {
+import antfu from '@antfu/eslint-config';
+
+export default antfu({
+  formatters: true,
+}, {
   rules: {
-    'max-len': ['warn', 120],
-    camelcase: 'off',
-    'object-curly-spacing': 'off',
-    quotes: ['warn', 'single'],
-    semi: ['warn', 'always'],
-    indent: ['warn', 2],
-    'comma-dangle': 'off',
+    'style/semi': ['error', 'always'],
+    'style/brace-style': ['error', '1tbs'],
+    'no-console': 'off',
+    'unicorn/prefer-node-protocol': 'off',
+    'node/prefer-global/process': 'off',
   },
-};
+});

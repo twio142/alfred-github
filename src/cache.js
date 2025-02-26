@@ -1,34 +1,39 @@
 #!/usr/bin/env node
 'use strict';
-import Database from 'better-sqlite3';
 import { spawn } from 'child_process';
 import { existsSync, mkdirSync, realpathSync, unlinkSync, writeFile } from 'fs';
 import { fileURLToPath } from 'url';
+import Database from 'better-sqlite3';
 import GitHub from './github.js';
 
 class Cache {
   static #dbFile = `${process.env.alfred_workflow_data}/cache.db`;
   #db;
-  #enterprise = process.env.enterprise == 1;
+  #enterprise = process.env.enterprise === 1;
   #accessToken = () =>
     this.#db
       .prepare('SELECT value FROM configs WHERE key = \'accessToken\'')
-      .get()?.value;
+      .get()
+      ?.value;
+
   #apiUrl = () => {
     if (this.#enterprise) {
       const url = this.#db
         .prepare('SELECT value FROM configs WHERE key = \'enterpriseUrl\'')
-        .get()?.value;
+        .get()
+        ?.value;
       return url ? url.replace(/\/?$/, '/api/v3') : null;
     } else {
       return 'https://api.github.com';
     }
   };
+
   #loggedIn = () => !!this.#accessToken() && !!this.#apiUrl();
   #username = () => {
     const { data } = this.requestCache('ME');
     return data?.login;
   };
+
   #GitHub;
   // #debug = !!process.env.alfred_debug;
 
@@ -71,7 +76,7 @@ class Cache {
   /**
    * @param {string} action
    * @param {object} options
-   * @param {boolean} refresh
+   * @param {boolean} forceRefresh
    * @param {number} prevId
    * @param {string} prevNodeId
    * @returns {Promise<{data: object, id: number}>}
@@ -98,14 +103,16 @@ class Cache {
    */
   async requestAPI(action, options = {}, id, prevId, prevNodeId) {
     console.error(action, options);
-    id = parseInt(id) || null;
-    prevId = parseInt(prevId) || null;
-    if (!this.#loggedIn()) throw new Error('Not logged in.');
+    id = Number.parseInt(id) || null;
+    prevId = Number.parseInt(prevId) || null;
+    if (!this.#loggedIn())
+      throw new Error('Not logged in.');
     const data = await this.#GitHub.request(action, options);
     if (Cache.#noCacheActions.includes(action)) {
       return { data };
     } else if (data) {
-      if (action === 'ME') this.#cacheMyAvatar(data.avatarUrl);
+      if (action === 'ME')
+        this.#cacheMyAvatar(data.avatarUrl);
       id = this.#cacheData(action, options, data, id, prevId, prevNodeId);
       return { data, id };
     } else {
@@ -129,7 +136,8 @@ class Cache {
   `,
       )
       .get(action, Cache.#dict(options));
-    if (row) row.data = JSON.parse(row.data);
+    if (row)
+      row.data = JSON.parse(row.data);
     return row || {};
   }
 
@@ -138,7 +146,8 @@ class Cache {
    * @returns {data: object, id: number, ...}
    */
   requestCacheById(id) {
-    if (!parseInt(id)) return;
+    if (!Number.parseInt(id))
+      return {};
     const row = this.#db
       .prepare(
         `
@@ -146,7 +155,7 @@ class Cache {
     WHERE id = ?
   `,
       )
-      .get(parseInt(id));
+      .get(Number.parseInt(id));
     if (row) {
       row.data = JSON.parse(row.data);
       row.options = JSON.parse(row.options);
@@ -155,11 +164,12 @@ class Cache {
   }
 
   #cacheMyAvatar(url) {
-    if (!existsSync('icons/me.png'))
+    if (!existsSync('icons/me.png')) {
       spawn('curl', ['-o', 'icons/me.png', url], {
         detached: true,
         stdio: 'ignore',
       }).unref();
+    }
   }
 
   /**
@@ -172,8 +182,8 @@ class Cache {
    * @returns {number}
    */
   #cacheData(action, options = {}, data, id, prevId, prevNodeId = null) {
-    id = parseInt(id) || null;
-    prevId = parseInt(prevId) || null;
+    id = Number.parseInt(id) || null;
+    prevId = Number.parseInt(prevId) || null;
     if (id) {
       this.#db
         .prepare(
@@ -199,7 +209,8 @@ class Cache {
           JSON.stringify(data),
           prevId,
           prevNodeId,
-        ).id;
+        )
+        .id;
     }
     return id;
   }
@@ -210,7 +221,8 @@ class Cache {
    * @param {number} id
    */
   #cacheInBackground(action = '', options = {}, id = '') {
-    if (!this.#loggedIn()) return;
+    if (!this.#loggedIn())
+      return;
     const child = spawn(
       fileURLToPath(import.meta.url),
       [action, JSON.stringify(options), String(id)],
@@ -303,11 +315,12 @@ class Cache {
   `,
       )
       .run(token, token);
-    if (this.#loggedIn())
+    if (this.#loggedIn()) {
       this.#GitHub = new GitHub({
         auth: this.#accessToken(),
         baseUrl: this.#apiUrl(),
       });
+    }
   }
 
   get apiUrl() {
@@ -319,7 +332,8 @@ class Cache {
       ? this.#db
         .prepare('SELECT value FROM configs WHERE key = \'enterpriseUrl\'')
         .get()
-        ?.value?.replace(/\/$/, '')
+        ?.value
+        ?.replace(/\/$/, '')
       : 'https://github.com';
   }
 
@@ -335,11 +349,12 @@ class Cache {
     `,
         )
         .run(url, url);
-      if (this.#loggedIn())
+      if (this.#loggedIn()) {
         this.#GitHub = new GitHub({
           auth: this.#accessToken(),
-          baseUrl: url + '/api/v3',
+          baseUrl: `${url}/api/v3`,
         });
+      }
     }
   }
 
@@ -347,7 +362,8 @@ class Cache {
     return this.#enterprise
       ? this.#db
         .prepare('SELECT value FROM configs WHERE key = \'gistUrl\'')
-        .get()?.value
+        .get()
+        ?.value
       : 'https://gist.github.com';
   }
 

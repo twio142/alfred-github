@@ -49,8 +49,9 @@ class GitHub {
    * @returns {Promise<object>}
    */
   async request(action, options = {}) {
-    let data, ACTION;
-    if (((ACTION = GitHub.#REST[action]), ACTION)) {
+    let data;
+    if (GitHub.#REST[action]) {
+      const ACTION = GitHub.#REST[action];
       for (const key in options) {
         if (Object.keys(ACTION[1]).includes(key)) {
           ACTION[1][key] = options[key];
@@ -65,7 +66,7 @@ class GitHub {
           data = data.items;
       }
       if (action === 'MY_NOTIFICATIONS') {
-        data = await Promise.all(data.map((d) => this.#getNotifications(d)));
+        data = await Promise.all(data.map(d => this.#getNotifications(d)));
       } else if (['MY_GISTS', 'MY_STARRED_GISTS'].includes(action)) {
         data = GitHub.#tidyGists(data);
       } else if (action === 'MY_CODESPACES') {
@@ -89,15 +90,16 @@ class GitHub {
           }),
         );
       }
-    } else if (((ACTION = GitHub.#GQL[action]), ACTION)) {
+    } else if (GitHub.#GQL[action]) {
+      const ACTION = GitHub.#GQL[action];
       for (const key in ACTION[1]) {
         if (ACTION[1][key] instanceof Enum) {
           ACTION[1][key] = ACTION[1][key].includes(options[key])
             ? options[key]
             : ACTION[1][key][0];
         } else {
-          ACTION[1][key] =
-            options[key] === undefined ? ACTION[1][key] : options[key];
+          ACTION[1][key]
+            = options[key] === undefined ? ACTION[1][key] : options[key];
         }
       }
       ACTION[1].headers = GitHub.headers;
@@ -110,8 +112,8 @@ class GitHub {
         data = await this.#getTree(data);
       } else {
         while (
-          Object.values(data)[0] instanceof Object &&
-          data.nodes === undefined
+          Object.values(data)[0] instanceof Object
+          && data.nodes === undefined
         ) {
           data = Object.values(data)[0];
         }
@@ -125,17 +127,17 @@ class GitHub {
 
   async #getNotifications(data) {
     let {
-        reason,
-        id: thread_id,
-        subject: { title, url, latest_comment_url, type },
-        repository: { full_name: repo },
-        updated_at,
-        unread,
-      } = data,
-      html_url,
-      state,
-      tag,
-      subject = data.subject;
+      reason,
+      id: thread_id,
+      subject: { title, url, latest_comment_url, type },
+      repository: { full_name: repo },
+      updated_at,
+      unread,
+    } = data;
+    let html_url;
+    let state;
+    let tag;
+    let subject = data.subject;
     latest_comment_url = latest_comment_url || url;
     if (latest_comment_url) {
       subject = (
@@ -145,7 +147,7 @@ class GitHub {
       ).data;
     }
     html_url = subject.html_url;
-    if (url && url != latest_comment_url) {
+    if (url && url !== latest_comment_url) {
       subject = (await this.#Octokit.request(`GET ${new URL(url).pathname}`))
         .data;
     }
@@ -155,17 +157,18 @@ class GitHub {
           `GET ${new URL(data.repository.url).pathname}`,
         )
       ).data.html_url;
-      if (type == 'Discussion') html_url += '/discussions';
+      if (type === 'Discussion')
+        html_url += '/discussions';
     }
-    if (type == 'PullRequest') {
+    if (type === 'PullRequest') {
       state = subject.merged_at ? 'merged' : subject.state;
       tag = subject.number;
-    } else if (type == 'Issue') {
+    } else if (type === 'Issue') {
       state = subject.state;
       tag = subject.number;
-    } else if (type == 'Release') {
+    } else if (type === 'Release') {
       tag = subject.tag_name;
-    } else if (type == 'Discussion') {
+    } else if (type === 'Discussion') {
       tag = subject.number;
     }
     return {
@@ -200,7 +203,7 @@ class GitHub {
     return tree;
   }
 
-  static #tidyGists = (nodes) =>
+  static #tidyGists = nodes =>
     nodes.map(
       ({
         node_id: id,
@@ -211,7 +214,7 @@ class GitHub {
         description,
         owner: { login: owner },
       }) => {
-        files = Object.values(files).map((f) => ({
+        files = Object.values(files).map(f => ({
           name: f.filename,
           url: f.raw_url,
           size: f.size,

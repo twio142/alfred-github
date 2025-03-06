@@ -1,19 +1,19 @@
-"use strict";
+'use strict';
 // https://docs.github.com/en/rest
 // https://github.com/octokit/core.js
 
-import { Octokit } from "@octokit/core";
-import { paginateRest } from "@octokit/plugin-paginate-rest";
-import { paginateGraphQL } from "@octokit/plugin-paginate-graphql";
-import fetch from "node-fetch";
-import * as GQL from "./graphql.js";
-import { Enum } from "./utils.js";
+import { Octokit } from '@octokit/core';
+import { paginateGraphQL } from '@octokit/plugin-paginate-graphql';
+import { paginateRest } from '@octokit/plugin-paginate-rest';
+import fetch from 'node-fetch';
+import * as GQL from './graphql.js';
+import { Enum } from './utils.js';
 
 const MyOctokit = Octokit.plugin(paginateRest, paginateGraphQL);
 
 class GitHub {
   #Octokit;
-  static headers = { "X-Github-Next-Global-ID": 1 };
+  static headers = { 'X-Github-Next-Global-ID': 1 };
   // #debug = !!process.env.alfred_debug;
 
   constructor({ auth, baseUrl }) {
@@ -22,22 +22,22 @@ class GitHub {
 
   static #REST = {
     MY_NOTIFICATIONS: [
-      "GET /notifications",
+      'GET /notifications',
       { all: false, per_page: 100 },
       // all (also show those marked as read): true / false (*)
     ],
     MARK_NOTIFICATION_AS_READ: [
-      "PATCH /notifications/threads/{thread_id}",
-      { thread_id: "" },
+      'PATCH /notifications/threads/{thread_id}',
+      { thread_id: '' },
     ],
     UNSUBSCRIBE_NOTIFICATION: [
-      "DELETE /notifications/threads/{thread_id}/subscription",
-      { thread_id: "" },
+      'DELETE /notifications/threads/{thread_id}/subscription',
+      { thread_id: '' },
     ],
-    MY_GISTS: ["GET /gists", { per_page: 100 }],
-    MY_STARRED_GISTS: ["GET /gists/starred", { per_page: 100 }],
-    SEARCH_TOPIC: ["GET /search/topics", { q: "", per_page: 20 }],
-    MY_CODESPACES: ["GET /user/codespaces", { per_page: 100 }],
+    MY_GISTS: ['GET /gists', { per_page: 100 }],
+    MY_STARRED_GISTS: ['GET /gists/starred', { per_page: 100 }],
+    SEARCH_TOPIC: ['GET /search/topics', { q: '', per_page: 20 }],
+    MY_CODESPACES: ['GET /user/codespaces', { per_page: 100 }],
   };
 
   static #GQL = GQL;
@@ -46,12 +46,13 @@ class GitHub {
    *
    * @param {string} action
    * @param {object} options
-   * @returns {Promise<object>}
+   * @returns {Promise<object>} response
    */
   async request(action, options = {}) {
-    let data, ACTION;
-    if (((ACTION = GitHub.#REST[action]), ACTION)) {
-      for (let key in options) {
+    let data;
+    if (GitHub.#REST[action]) {
+      const ACTION = GitHub.#REST[action];
+      for (const key in options) {
         if (Object.keys(ACTION[1]).includes(key)) {
           ACTION[1][key] = options[key];
         }
@@ -64,11 +65,11 @@ class GitHub {
         if (data?.total_count !== undefined && Array.isArray(data.items))
           data = data.items;
       }
-      if (action === "MY_NOTIFICATIONS") {
-        data = await Promise.all(data.map((d) => this.#getNotifications(d)));
-      } else if (["MY_GISTS", "MY_STARRED_GISTS"].includes(action)) {
+      if (action === 'MY_NOTIFICATIONS') {
+        data = await Promise.all(data.map(d => this.#getNotifications(d)));
+      } else if (['MY_GISTS', 'MY_STARRED_GISTS'].includes(action)) {
         data = GitHub.#tidyGists(data);
-      } else if (action === "MY_CODESPACES") {
+      } else if (action === 'MY_CODESPACES') {
         data = data.map(
           ({
             name,
@@ -89,15 +90,16 @@ class GitHub {
           }),
         );
       }
-    } else if (((ACTION = GitHub.#GQL[action]), ACTION)) {
-      for (let key in ACTION[1]) {
+    } else if (GitHub.#GQL[action]) {
+      const ACTION = GitHub.#GQL[action];
+      for (const key in ACTION[1]) {
         if (ACTION[1][key] instanceof Enum) {
           ACTION[1][key] = ACTION[1][key].includes(options[key])
             ? options[key]
             : ACTION[1][key][0];
         } else {
-          ACTION[1][key] =
-            options[key] === undefined ? ACTION[1][key] : options[key];
+          ACTION[1][key]
+            = options[key] === undefined ? ACTION[1][key] : options[key];
         }
       }
       ACTION[1].headers = GitHub.headers;
@@ -106,12 +108,12 @@ class GitHub {
       } else {
         data = await this.#Octokit.graphql(...ACTION);
       }
-      if (action === "REPO_TREE") {
+      if (action === 'REPO_TREE') {
         data = await this.#getTree(data);
       } else {
         while (
-          Object.values(data)[0] instanceof Object &&
-          data.nodes === undefined
+          Object.values(data)[0] instanceof Object
+          && data.nodes === undefined
         ) {
           data = Object.values(data)[0];
         }
@@ -132,10 +134,10 @@ class GitHub {
       updated_at,
       unread,
     } = data;
-    let html_url,
-      state,
-      tag,
-      subject = data.subject;
+    let html_url;
+    let state;
+    let tag;
+    let subject = data.subject;
     latest_comment_url = latest_comment_url || url;
     if (latest_comment_url) {
       subject = (
@@ -145,7 +147,7 @@ class GitHub {
       ).data;
     }
     html_url = subject.html_url;
-    if (url && url != latest_comment_url) {
+    if (url && url !== latest_comment_url) {
       subject = (await this.#Octokit.request(`GET ${new URL(url).pathname}`))
         .data;
     }
@@ -155,17 +157,18 @@ class GitHub {
           `GET ${new URL(data.repository.url).pathname}`,
         )
       ).data.html_url;
-      if (type == "Discussion") html_url += `/discussions`;
+      if (type === 'Discussion')
+        html_url += '/discussions';
     }
-    if (type == "PullRequest") {
-      state = subject.merged_at ? "merged" : subject.state;
+    if (type === 'PullRequest') {
+      state = subject.merged_at ? 'merged' : subject.state;
       tag = subject.number;
-    } else if (type == "Issue") {
+    } else if (type === 'Issue') {
       state = subject.state;
       tag = subject.number;
-    } else if (type == "Release") {
+    } else if (type === 'Release') {
       tag = subject.tag_name;
-    } else if (type == "Discussion") {
+    } else if (type === 'Discussion') {
       tag = subject.number;
     }
     return {
@@ -183,15 +186,15 @@ class GitHub {
   }
 
   async #getTree({ repository }) {
-    let repo = repository.nameWithOwner;
-    let url = repository.url;
-    let ref = repository.defaultBranchRef.name;
-    let { oid } = repository.defaultBranchRef.target.tree;
-    let { data } = await this.#Octokit.request(
+    const repo = repository.nameWithOwner;
+    const url = repository.url;
+    const ref = repository.defaultBranchRef.name;
+    const { oid } = repository.defaultBranchRef.target.tree;
+    const { data } = await this.#Octokit.request(
       `GET /repos/${repo}/git/trees/${oid}?recursive=true`,
       { headers: GitHub.headers },
     );
-    let tree = data.tree.map(({ path, type, size }) => ({
+    const tree = data.tree.map(({ path, type, size }) => ({
       path,
       type,
       size,
@@ -200,7 +203,7 @@ class GitHub {
     return tree;
   }
 
-  static #tidyGists = (nodes) =>
+  static #tidyGists = nodes =>
     nodes.map(
       ({
         node_id: id,
@@ -211,7 +214,7 @@ class GitHub {
         description,
         owner: { login: owner },
       }) => {
-        files = Object.values(files).map((f) => ({
+        files = Object.values(files).map(f => ({
           name: f.filename,
           url: f.raw_url,
           size: f.size,

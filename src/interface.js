@@ -898,7 +898,9 @@ class Interface {
     this.Workflow.addItem({
       title: repo.nameWithOwner,
       subtitle: 'Open in browser',
-      icon: { path: 'icons/repo.png' },
+      icon: {
+        path: `icons/repo${repo.isPrivate ? '_private' : repo.viewerHasStarred ? '_star' : ''}.png`,
+      },
       match: 'wiki homepage ssh url link',
       quicklookurl: repo.url,
       arg: repo.url,
@@ -940,7 +942,9 @@ class Interface {
     });
     this.Workflow.addItem({
       title: owner,
-      icon: { path: 'icons/user.png' },
+      icon: {
+        path: `icons/${repo.owner.id.startsWith('U') ? 'user' : 'organization'}.png`,
+      },
       match: `user ${owner}`,
       quicklookurl: repo.url.replace(`/${name}`, ''),
       variables: { prevNodeId: repo.owner.id, prevId: -1 },
@@ -1079,7 +1083,11 @@ class Interface {
       title: `${user.login}${user.name ? `  (${user.name}) ` : ''}`,
       subtitle: 'Open in browser',
       icon: {
-        path: `icons/${user.id.startsWith('U') ? 'user' : 'organization'}.png`,
+        path: `icons/${
+          user.id.startsWith('U') ? 'user' : 'organization'
+        }${
+          user.viewerIsFollowing ? '_follow' : ''
+        }.png`,
       },
       text: {
         largetype: user.bio || user.description,

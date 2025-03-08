@@ -2,5 +2,7 @@ node_modules
 .DS_Store
 .vscode
 .envrc
+.env
 prefs.plist
 package-lock.json
+icons/

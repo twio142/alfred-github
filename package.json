@@ -2,9 +2,9 @@
   "name": "alfred-github",
   "version": "1.0.0",
   "description": "GitHub Workflow for Alfred 5",
-  "main": "",
   "type": "module",
   "scripts": {
+    "init": "npm install --omit=dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

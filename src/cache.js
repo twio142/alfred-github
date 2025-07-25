@@ -330,10 +330,10 @@ class Cache {
   get baseUrl() {
     return this.#enterprise
       ? this.#db
-        .prepare('SELECT value FROM configs WHERE key = \'enterpriseUrl\'')
-        .get()
-        ?.value
-        ?.replace(/\/$/, '')
+          .prepare('SELECT value FROM configs WHERE key = \'enterpriseUrl\'')
+          .get()
+          ?.value
+          ?.replace(/\/$/, '')
       : 'https://github.com';
   }
 

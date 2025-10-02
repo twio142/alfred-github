@@ -197,7 +197,7 @@
 				<key>script</key>
 				<string>case $execute in
   open_link) open "$@";;
-  copy)      echo -n "$@" | pbcopy &amp;&amp; afplay /System/Library/Sounds/Purr.aiff;;
+  copy)      printf "$@" | pbcopy &amp;&amp; afplay /System/Library/Sounds/Purr.aiff;;
   action)    ./src/interface.js;;
   command)   ./src/interface.js "$1";;
   shell)     eval "$1";;

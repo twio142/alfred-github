@@ -256,6 +256,7 @@ class Cache {
     'MARK_NOTIFICATION_AS_READ',
     'UNSUBSCRIBE_NOTIFICATION',
     'CREATE_REPO',
+    'FORK_REPO',
   ];
 
   static myRelatedRepos = [

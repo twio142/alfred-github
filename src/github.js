@@ -38,6 +38,7 @@ class GitHub {
     MY_STARRED_GISTS: ['GET /gists/starred', { per_page: 100 }],
     SEARCH_TOPIC: ['GET /search/topics', { q: '', per_page: 20 }],
     MY_CODESPACES: ['GET /user/codespaces', { per_page: 100 }],
+    FORK_REPO: ['POST /repos/{owner}/{repo}/forks', { owner: '', repo: '', default_branch_only: true }],
   };
 
   static #GQL = GQL;
@@ -89,6 +90,8 @@ class GitHub {
             last_used_at,
           }),
         );
+      } else if (action === 'FORK_REPO') {
+        data = await this.#getRepo(data);
       }
     } else if (GitHub.#GQL[action]) {
       const ACTION = GitHub.#GQL[action];
@@ -201,6 +204,47 @@ class GitHub {
       url: `${url}/${type}/${ref}/${path}`,
     }));
     return tree;
+  }
+
+  async #getRepo(repository) {
+    const {
+      node_id: id,
+      full_name: nameWithOwner,
+      owner: { node_id: ownerID },
+      description,
+      private: isPrivate,
+      language,
+      updated_at: updatedAt,
+      stargazers_count: stargazerCount,
+      open_issues: issuesCount,
+      parent,
+      homepage: homepageUrl,
+      html_url: url,
+      ssh_url: sshUrl,
+      has_wiki: hasWikiEnabled,
+    } = repository;
+    return {
+      id,
+      nameWithOwner,
+      owner: { id: ownerID },
+      description,
+      isPrivate,
+      primaryLanguage: { name: language },
+      pullRequests: {},
+      issues: { count: issuesCount },
+      releases: {},
+      updatedAt,
+      stargazerCount,
+      parent: parent ? {
+        nameWithOwner: parent.full_name,
+        url: parent.html_url,
+        id: parent.node_id,
+      } : null,
+      url,
+      sshUrl,
+      homepageUrl,
+      hasWikiEnabled,
+    }
   }
 
   static #tidyGists = nodes =>

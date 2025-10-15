@@ -61,6 +61,8 @@ class Interface {
       await this.search(input, process.env.action);
     } else if (process.env.action === 'CREATE_REPO') {
       await this.createRepo(input);
+    } else if (process.env.action === 'FORK_REPO') {
+      await this.forkRepo(input);
     } else if (process.env.action) {
       if (this.#debug) {
         console.error(
@@ -1055,6 +1057,34 @@ class Interface {
           }),
         },
       });
+      this.Workflow.addItem({
+        title: 'Fork Repo',
+        icon: { path: 'icons/fork.png' },
+        match: 'fork',
+        quicklookurl: `${repo.url}/fork`,
+        variables: {
+          action: 'FORK_REPO',
+          options: JSON.stringify({ owner, repo: name }),
+          prevId: this.#prevId,
+          prevNodeId: this.#prevNodeId,
+        },
+        mods: {
+          cmd: {
+            subtitle: 'Open in browser',
+            variables: { execute: 'open_link' },
+            arg: `${repo.url}/fork`,
+          },
+          alt: {
+            subtitle: 'With all branches',
+            variables: {
+              action: 'FORK_REPO',
+              options: JSON.stringify({ owner, repo: name, default_branch_only: false }),
+              prevId: this.#prevId,
+              prevNodeId: this.#prevNodeId,
+            },
+          },
+        },
+      });
     }
     if (repo.parent) {
       this.Workflow.addItem({
@@ -1199,6 +1229,17 @@ class Interface {
         console.error(e.message);
         this.Workflow.warnEmpty(`Error: ${e.message}`);
       }
+    }
+  }
+
+  async forkRepo() {
+    const options = JSON.parse(process.env.options || '{}');
+    try {
+      const { data } = await this.#Cache.request('FORK_REPO', options);
+      this.#repoMenu(data);
+    } catch (e) {
+      console.error(e.message);
+      this.Workflow.warnEmpty(`Error: ${e.message}`);
     }
   }
 

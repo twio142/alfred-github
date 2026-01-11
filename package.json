@@ -11,11 +11,11 @@
     "start": "node ./src/interface.js"
   },
   "dependencies": {
-    "@octokit/auth-oauth-user": "^6.0.1",
-    "@octokit/core": "^7.0.5",
+    "@octokit/auth-oauth-user": "^6.0.2",
+    "@octokit/core": "^7.0.6",
     "@octokit/plugin-paginate-graphql": "^6.0.0",
-    "@octokit/plugin-paginate-rest": "^13.2.0",
-    "better-sqlite3": "^12.4.1",
+    "@octokit/plugin-paginate-rest": "^14.0.0",
+    "better-sqlite3": "^12.6.0",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {

@@ -178,6 +178,9 @@ fragment queryPR on PullRequest {
   }
   url
   id
+  statusCheckRollup {
+    state
+  }
 }
 `;
 

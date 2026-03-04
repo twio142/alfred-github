@@ -671,9 +671,15 @@ class Interface {
   }
 
   #formatIssue(issue) {
-    const title = `${issue.title}  ${
-      issue.viewerSubscription === 'SUBSCRIBED' ? '􀋙' : ''
-    }`;
+    const checkState = issue.statusCheckRollup?.state;
+    const stateIcons = {
+      SUCCESS: '􀆅 ',
+      FAILURE: '􀆄 ',
+      EXPECTED: '􀆊 ',
+      PENDING: '􀖇 ',
+      ERROR: '􀅎 ',
+    };
+    const title = [stateIcons[checkState], issue.title, issue.viewerSubscription === 'SUBSCRIBED' ? '  􀋙' : ''].filter(Boolean).join('');
     const comments = convertNum(issue.comments.totalCount);
     const updated = datetimeFormat(issue.updatedAt);
     const subtitle = [

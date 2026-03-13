@@ -1195,7 +1195,7 @@ class Interface {
           const { data: myRepos } = await this.#Cache.requestCache('MY_REPOS', {
             multiPages: true,
           });
-          if (myRepos.find(r => r.nameWithOwner === nameWithOwner)) {
+          if (myRepos.some(r => r.nameWithOwner === nameWithOwner)) {
             valid = !1;
             message = '􀇾 Repository already exists';
           }

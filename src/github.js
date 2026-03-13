@@ -234,16 +234,18 @@ class GitHub {
       releases: {},
       updatedAt,
       stargazerCount,
-      parent: parent ? {
-        nameWithOwner: parent.full_name,
-        url: parent.html_url,
-        id: parent.node_id,
-      } : null,
+      parent: parent
+        ? {
+            nameWithOwner: parent.full_name,
+            url: parent.html_url,
+            id: parent.node_id,
+          }
+        : null,
       url,
       sshUrl,
       homepageUrl,
       hasWikiEnabled,
-    }
+    };
   }
 
   static #tidyGists = nodes =>

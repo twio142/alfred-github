@@ -5,7 +5,6 @@
 import { Octokit } from '@octokit/core';
 import { paginateGraphQL } from '@octokit/plugin-paginate-graphql';
 import { paginateRest } from '@octokit/plugin-paginate-rest';
-import fetch from 'node-fetch';
 import * as GQL from './graphql.js';
 import { Enum } from './utils.js';
 
@@ -17,7 +16,7 @@ class GitHub {
   // #debug = !!process.env.alfred_debug;
 
   constructor({ auth, baseUrl }) {
-    this.#Octokit = new MyOctokit({ auth, baseUrl, request: { fetch } });
+    this.#Octokit = new MyOctokit({ auth, baseUrl });
   }
 
   static #REST = {

@@ -698,7 +698,7 @@ class Interface {
       match: matchStr(issue.title),
       icon: { path: icon },
       text: {
-        largetype: issue.body,
+        largetype: issue.bodyText,
       },
       mods: {
         alt: { subtitle: issue.bodyText, valid: !1 },

@@ -1166,14 +1166,21 @@ class Interface {
     if (repo.parent) {
       this.Workflow.addItem({
         title: repo.parent.nameWithOwner,
+        subtitle: 'Open menu',
         icon: { path: 'icons/fork.png' },
         match: 'fork',
         quicklookurl: repo.parent.url,
         text: { copy: repo.parent.nameWithOwner },
         variables: {
-          action: 'NODES',
-          options: JSON.stringify({ ids: [repo.parent.id] }),
-          menu_path: this.#pathVar(),
+          menu_path: this.#childPath(`-1:${repo.parent.id}`),
+          action: '',
+        },
+        mods: {
+          shift: {
+            subtitle: 'Open in browser',
+            variables: { execute: 'open_link' },
+            arg: repo.parent.url,
+          },
         },
       });
     }

@@ -27,7 +27,8 @@ class Interface {
 
   async run(input = '') {
     if (!this.#Cache.loggedIn) {
-      this.logIn(input);
+      if (!process.env.config)
+        this.logIn(input);
     } else {
       this.#Cache.refreshInBackground();
     }
@@ -95,7 +96,7 @@ class Interface {
     }
     if (this.#menuPath.length > 1) {
       this.Workflow.addItem({
-        title: 'Back',
+        title: 'Go Back',
         icon: { path: 'icons/back.png' },
         // Back = drop the current frame. No `action`, so the parent frame is
         // re-rendered straight from `menu_path`.
@@ -1377,17 +1378,21 @@ class Interface {
     const { accessToken, baseUrl, gistUrl } = this.#Cache;
     this.Workflow.addItem({
       title: `Set Personal Access Token${input ? `: ${input}` : ''}`,
-      subtitle: accessToken ? 'Current: ＊＊＊＊＊＊' : '',
+      subtitle: accessToken
+        ? `${accessToken.match(/^(gh[a-z]|github_pat)_/)?.[0] || ''}***`
+        : '',
       arg: input,
       valid: !!input,
       icon: { path: 'icons/login.png' },
       variables: { execute: 'command', command: 'set_access_token' },
       mods: {
-        cmd: {
-          subtitle: 'Delete token',
-          variables: { execute: 'command', command: 'del_access_token' },
-          icon: { path: 'icons/delete.png' },
-        },
+        cmd: accessToken
+          ? {
+              subtitle: 'Delete token',
+              variables: { execute: 'command', command: 'del_access_token' },
+              icon: { path: 'icons/delete.png' },
+            }
+          : undefined,
       },
     });
     if (this.#enterprise) {
@@ -1425,12 +1430,12 @@ class Interface {
   }
 
   config(input) {
+    this.logIn(input);
     this.Workflow.addItem({
       title: 'Clear Cache',
       icon: { path: 'icons/clear_cache.png' },
       variables: { execute: 'command', command: 'clear_cache' },
     });
-    this.logIn(input);
   }
 
   notifyAction(action, data) {

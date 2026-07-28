@@ -49,10 +49,7 @@ class Cache {
     action TEXT NOT NULL,
     options TEXT NOT NULL DEFAULT '{}',
     data TEXT NOT NULL,
-    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    prevId INTEGER,
-    prevNodeId TEXT,
-    FOREIGN KEY (prevId) REFERENCES cache(id)
+    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
   `);
     this.#db.exec(`
@@ -77,11 +74,9 @@ class Cache {
    * @param {string} action
    * @param {object} options
    * @param {boolean} forceRefresh
-   * @param {number} prevId
-   * @param {string} prevNodeId
    * @returns {Promise<{data: object, id: number}>} response
    */
-  async request(action, options = {}, forceRefresh = !1, prevId, prevNodeId) {
+  async request(action, options = {}, forceRefresh = !1) {
     const row = this.requestCache(action, options);
     if (row.data && !forceRefresh) {
       if (!row.fresh) {
@@ -89,7 +84,7 @@ class Cache {
       }
       return { data: row.data, id: row.id };
     } else {
-      return await this.requestAPI(action, options, null, prevId, prevNodeId);
+      return await this.requestAPI(action, options, null);
     }
   }
 
@@ -97,14 +92,11 @@ class Cache {
    * @param {string} action
    * @param {object} options
    * @param {number} id
-   * @param {number} prevId
-   * @param {string} prevNodeId
    * @returns {Promise<{data: object, id: number}>} response
    */
-  async requestAPI(action, options = {}, id, prevId, prevNodeId) {
+  async requestAPI(action, options = {}, id) {
     console.error(action, options);
     id = Number.parseInt(id) || null;
-    prevId = Number.parseInt(prevId) || null;
     if (!this.#loggedIn())
       throw new Error('Not logged in.');
     const data = await this.#GitHub.request(action, options);
@@ -113,7 +105,7 @@ class Cache {
     } else if (data) {
       if (action === 'ME')
         this.#cacheMyAvatar(data.avatarUrl);
-      id = this.#cacheData(action, options, data, id, prevId, prevNodeId);
+      id = this.#cacheData(action, options, data, id);
       return { data, id };
     } else {
       return {};
@@ -177,39 +169,30 @@ class Cache {
    * @param {object} options
    * @param {object} data
    * @param {number} id
-   * @param {number} prevId
-   * @param {string} prevNodeId
    * @returns {number} id
    */
-  #cacheData(action, options = {}, data, id, prevId, prevNodeId = null) {
+  #cacheData(action, options = {}, data, id) {
     id = Number.parseInt(id) || null;
-    prevId = Number.parseInt(prevId) || null;
     if (id) {
       this.#db
         .prepare(
           `
     UPDATE cache
-    SET data = ?, timestamp = CURRENT_TIMESTAMP, prevId = ?, prevNodeId = ?
+    SET data = ?, timestamp = CURRENT_TIMESTAMP
     WHERE id = ?
     `,
         )
-        .run(JSON.stringify(data), prevId, prevNodeId, id);
+        .run(JSON.stringify(data), id);
     } else {
       id = this.#db
         .prepare(
           `
-    INSERT INTO cache (action, options, data, prevId, prevNodeId)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO cache (action, options, data)
+    VALUES (?, ?, ?)
     RETURNING id;
     `,
         )
-        .get(
-          action,
-          Cache.#dict(options),
-          JSON.stringify(data),
-          prevId,
-          prevNodeId,
-        )
+        .get(action, Cache.#dict(options), JSON.stringify(data))
         .id;
     }
     return id;

@@ -17,8 +17,7 @@ class Interface {
   Workflow;
   #Cache;
   #enterprise = process.env.enterprise === '1';
-  #prevId = 'main';
-  #prevNodeId;
+  #menuPath = [];
   #debug = !!process.env.alfred_debug;
 
   constructor() {
@@ -32,63 +31,44 @@ class Interface {
     } else {
       this.#Cache.refreshInBackground();
     }
-    if (Number.parseInt(process.env.back)) {
-      if (this.#debug)
-        console.error(1, process.env.back, process.env.prevNodeId);
-      const row = this.#Cache.requestCacheById(process.env.back);
-      this.Workflow.setVar('back', '');
-      if (row?.data) {
-        if (process.env.prevNodeId) {
-          this.#prevId = process.env.back;
-          this.#prevNodeId = process.env.prevNodeId;
-          await this.subMenu(input);
-        } else {
-          this.formatOutput(row.data, row.id);
-          this.Workflow.filter(input);
-        }
-        this.#prevId = row.prevId || this.#prevId;
-        this.#prevNodeId = row.prevNodeId;
-      } else {
-        await this.mainMenu();
-      }
+    // All navigation state lives in one variable, `menu_path`, serialized as
+    // `id1:nodeId1|id2:nodeId2|...`. Its last frame is the current screen: a
+    // bare `id:` is a cached list, `id:nodeId` a node submenu, `main:` the root.
+    // `action` (+ `options`/`queryPrefix`) is the only other control — it runs a
+    // request and appends the resulting list, because that list's id isn't known
+    // until the request returns. Everything else (drilling in, Back, typing)
+    // carries no `action` and simply re-renders `menu_path`'s tail frame, so
+    // Back is just "drop the last frame" and a submenu is just "append a frame".
+    const path = Interface.#parsePath(process.env.menu_path);
+    // Request params travel with `action`; clear them so a stale value can't
+    // leak onto the next actioned item (Alfred keeps variables until cleared).
+    this.Workflow.setVar('options', '');
+    this.Workflow.setVar('queryPrefix', '');
+    this.Workflow.setVar('execute', '');
+    if (process.env.action === 'CREATE_REPO') {
+      await this.createRepo(input);
+    } else if (process.env.action === 'FORK_REPO') {
+      await this.forkRepo();
     } else if (process.env.action?.startsWith('SEARCH_')) {
       if (this.#debug)
         console.error(2, process.env.action);
       if (process.env.queryPrefix)
         input = `${process.env.queryPrefix} ${input}`;
-      this.#prevId = process.env.prevId || this.#prevId;
-      this.#prevNodeId = process.env.prevNodeId;
-      await this.search(input, process.env.action);
-    } else if (process.env.action === 'CREATE_REPO') {
-      await this.createRepo(input);
-    } else if (process.env.action === 'FORK_REPO') {
-      await this.forkRepo(input);
+      await this.search(input, process.env.action, path);
     } else if (process.env.action) {
-      if (this.#debug) {
-        console.error(
-          3,
-          process.env.action,
-          process.env.prevId,
-          process.env.prevNodeId,
-        );
-      }
+      if (this.#debug)
+        console.error(3, process.env.action, process.env.menu_path);
       const action = process.env.action;
-      this.#prevId = process.env.prevId || this.#prevId;
-      this.#prevNodeId = process.env.prevNodeId;
       const options = JSON.parse(process.env.options || '{}');
       try {
-        const { id, data } = await this.#Cache.request(
-          action,
-          options,
-          null,
-          this.#prevId,
-          this.#prevNodeId,
-        );
+        const { id, data } = await this.#Cache.request(action, options);
         if (process.env.execute) {
           return this.notifyAction(action, data);
         } else if (!data?.length) {
+          this.#menuPath = [...path, ''];
           this.Workflow.warnEmpty('No Results Found.');
         } else {
+          this.#menuPath = [...path, `${id}:`];
           this.formatOutput(data, id);
           this.Workflow.filter(input);
         }
@@ -97,16 +77,10 @@ class Interface {
         if (process.env.execute) {
           return notify(`Error: ${e.message}`);
         } else {
+          this.#menuPath = [...path, ''];
           this.Workflow.warnEmpty(`Error: ${e.message}`);
         }
       }
-    } else if (process.env.prevNodeId && Number.parseInt(process.env.prevId)) {
-      if (this.#debug)
-        console.error(4, process.env.prevId, process.env.prevNodeId);
-      this.#prevId = process.env.prevId;
-      this.#prevNodeId = process.env.prevNodeId;
-      this.Workflow.setVar('prevId', '');
-      await this.subMenu(input);
     } else if (process.env.command) {
       if (this.#debug)
         console.error(5, process.env.command);
@@ -115,33 +89,118 @@ class Interface {
       if (this.#debug)
         console.error(6, process.env.config);
       this.config(input);
-    } else if (input.startsWith('.')) {
-      if (this.#debug)
-        console.error(7);
-      this.myMenu();
-      this.Workflow.filter(input.slice(1));
     } else if (this.#Cache.loggedIn) {
-      if (this.#debug)
-        console.error(8);
-      await this.mainMenu(input);
+      this.#menuPath = path.length ? path : ['main:'];
+      await this.#renderFrame(this.#menuPath.at(-1), input);
     }
-    if (this.#prevId) {
+    if (this.#menuPath.length > 1) {
       this.Workflow.addItem({
         title: 'Back',
         icon: { path: 'icons/back.png' },
+        // Back = drop the current frame. No `action`, so the parent frame is
+        // re-rendered straight from `menu_path`.
         variables: {
-          back: this.#prevId,
-          prevNodeId: this.#prevNodeId,
           action: '',
+          menu_path: Interface.#serializePath(this.#menuPath.slice(0, -1)),
         },
       });
     }
     return this.Workflow.output();
   }
 
+  /** @param {string} str */
+  static #parsePath(str) {
+    return (str || '').split('|').filter(Boolean);
+  }
+
+  /** @param {string[]} frames */
+  static #serializePath(frames) {
+    return frames.filter(Boolean).join('|');
+  }
+
+  /**
+   * Split a `id:nodeId` frame. nodeId is '' for a bare list frame.
+   * @param {string} frame
+   * @returns {[string, string]} the `[id, nodeId]` pair
+   */
+  static #splitFrame(frame) {
+    const i = (frame || '').indexOf(':');
+    return i === -1 ? [frame, ''] : [frame.slice(0, i), frame.slice(i + 1)];
+  }
+
+  /** `menu_path` value carried by fixed items on the current screen. */
+  #pathVar() {
+    return Interface.#serializePath(this.#menuPath);
+  }
+
+  /**
+   * Frames of the screen that owns a node in the cached list `listId`. Usually
+   * the current screen *is* that list (its `listId:` frame is already the tail);
+   * otherwise (e.g. aggregated results on the main menu) the list frame is
+   * appended so Back lands on the list.
+   * @param {number|string} listId
+   */
+  #nodeParentFrames(listId) {
+    const frame = `${listId}:`;
+    return this.#menuPath.at(-1) === frame
+      ? this.#menuPath
+      : [...this.#menuPath, frame];
+  }
+
+  /** `menu_path` for an item that produces a list from a node in `listId`. */
+  #nodeParentPath(listId) {
+    return Interface.#serializePath(this.#nodeParentFrames(listId));
+  }
+
+  /** `menu_path` for an item that drills into node `nodeId` of list `listId`. */
+  #submenuPath(listId, nodeId) {
+    return Interface.#serializePath([
+      ...this.#nodeParentFrames(listId),
+      `${listId}:${nodeId}`,
+    ]);
+  }
+
+  /** `menu_path` for an item on the current screen that drills into `frame`. */
+  #childPath(frame) {
+    return Interface.#serializePath([...this.#menuPath, frame]);
+  }
+
+  /**
+   * Reproduce the screen described by a single `menu_path` frame.
+   * @param {string} frame
+   * @param {string} input
+   */
+  async #renderFrame(frame, input) {
+    const [id, nodeId] = Interface.#splitFrame(frame);
+    if (nodeId) {
+      if (this.#debug)
+        console.error(4, id, nodeId);
+      await this.subMenu(id, nodeId);
+    } else if (id === 'main' || !id) {
+      if (input.startsWith('.')) {
+        if (this.#debug)
+          console.error(7);
+        this.myMenu();
+        this.Workflow.filter(input.slice(1));
+      } else {
+        if (this.#debug)
+          console.error(8);
+        await this.mainMenu(input);
+      }
+    } else {
+      if (this.#debug)
+        console.error(1, id);
+      const row = this.#Cache.requestCacheById(id);
+      if (row?.data) {
+        this.formatOutput(row.data, row.id);
+        this.Workflow.filter(input);
+      } else {
+        await this.mainMenu(input);
+      }
+    }
+  }
+
   myMenu() {
-    this.#prevId = null;
-    this.#prevNodeId = null;
     const { baseUrl, gistUrl, username } = this.#Cache;
     this.Workflow.addItem({
       title: 'My Repos',
@@ -150,6 +209,7 @@ class Interface {
       variables: {
         action: 'MY_REPOS',
         options: JSON.stringify({ multiPages: true }),
+        menu_path: this.#pathVar(),
       },
       mods: {
         shift: {
@@ -166,6 +226,7 @@ class Interface {
       variables: {
         action: 'MY_STARS',
         options: JSON.stringify({ multiPages: true }),
+        menu_path: this.#pathVar(),
       },
       mods: {
         shift: {
@@ -182,6 +243,7 @@ class Interface {
       variables: {
         action: 'MY_LISTS',
         options: JSON.stringify({ multiPages: true }),
+        menu_path: this.#pathVar(),
       },
       mods: {
         shift: {
@@ -198,6 +260,7 @@ class Interface {
       variables: {
         action: 'MY_WATCHING',
         options: JSON.stringify({ multiPages: true }),
+        menu_path: this.#pathVar(),
       },
       mods: {
         shift: {
@@ -214,6 +277,7 @@ class Interface {
       variables: {
         action: 'MY_GISTS',
         options: JSON.stringify({ multiPages: true }),
+        menu_path: this.#pathVar(),
       },
       mods: {
         shift: {
@@ -230,6 +294,7 @@ class Interface {
       variables: {
         action: 'MY_STARRED_GISTS',
         options: JSON.stringify({ multiPages: true }),
+        menu_path: this.#pathVar(),
       },
       mods: {
         shift: {
@@ -246,6 +311,7 @@ class Interface {
       variables: {
         action: 'MY_FOLLOWING',
         options: JSON.stringify({ multiPages: true }),
+        menu_path: this.#pathVar(),
       },
       mods: {
         shift: {
@@ -262,6 +328,7 @@ class Interface {
       variables: {
         action: 'MY_ISSUES',
         options: JSON.stringify({ multiPages: true }),
+        menu_path: this.#pathVar(),
       },
       mods: {
         shift: {
@@ -278,6 +345,7 @@ class Interface {
       variables: {
         action: 'MY_PRS',
         options: JSON.stringify({ multiPages: true }),
+        menu_path: this.#pathVar(),
       },
       mods: {
         shift: {
@@ -294,6 +362,7 @@ class Interface {
       variables: {
         action: 'MY_NOTIFICATIONS',
         options: JSON.stringify({ multiPages: true }),
+        menu_path: this.#pathVar(),
       },
       mods: {
         shift: {
@@ -310,6 +379,7 @@ class Interface {
       variables: {
         action: 'MY_PROJECTS',
         options: JSON.stringify({ multiPages: true }),
+        menu_path: this.#pathVar(),
       },
       mods: {
         shift: {
@@ -326,6 +396,7 @@ class Interface {
       variables: {
         action: 'MY_CODESPACES',
         options: JSON.stringify({ multiPages: true }),
+        menu_path: this.#pathVar(),
       },
       mods: {
         shift: {
@@ -409,8 +480,7 @@ class Interface {
   }
 
   async mainMenu(input) {
-    this.#prevId = null;
-    this.#prevNodeId = null;
+    this.#menuPath = ['main:'];
     const { baseUrl } = this.#Cache;
     if (!input) {
       this.Workflow.addItem({
@@ -428,7 +498,7 @@ class Interface {
       icon: { path: 'icons/repo.png' },
       arg: input,
       valid: !!input,
-      variables: { action: 'SEARCH_REPO' },
+      variables: { action: 'SEARCH_REPO', menu_path: this.#pathVar() },
       mods: {
         cmd: {
           subtitle: 'Search in browser',
@@ -444,7 +514,7 @@ class Interface {
       icon: { path: 'icons/user.png' },
       arg: input,
       valid: !!input,
-      variables: { action: 'SEARCH_USER' },
+      variables: { action: 'SEARCH_USER', menu_path: this.#pathVar() },
       mods: {
         cmd: {
           subtitle: 'Search in browser',
@@ -458,7 +528,7 @@ class Interface {
       icon: { path: 'icons/issue.png' },
       arg: input,
       valid: !!input,
-      variables: { action: 'SEARCH_ISSUE' },
+      variables: { action: 'SEARCH_ISSUE', menu_path: this.#pathVar() },
       mods: {
         cmd: {
           subtitle: 'Search in browser',
@@ -473,6 +543,7 @@ class Interface {
       variables: {
         action: 'SEARCH_TOPIC',
         options: JSON.stringify({ q: input }),
+        menu_path: this.#pathVar(),
       },
       arg: input,
       valid: !!input,
@@ -486,19 +557,20 @@ class Interface {
     });
   }
 
-  async search(q, action = 'SEARCH_REPO') {
+  async search(q, action = 'SEARCH_REPO', path = []) {
     if (!action.startsWith('SEARCH_'))
       throw new Error('Invalid action.');
     try {
-      const { data, id } = await this.#Cache.request(
-        action,
-        { q },
-        null,
-        this.#prevId,
-        this.#prevNodeId,
-      );
+      const { data, id } = await this.#Cache.request(action, { q });
+      if (!data?.length) {
+        this.#menuPath = [...path, ''];
+        this.Workflow.warnEmpty('No Results Found.');
+        return;
+      }
+      this.#menuPath = [...path, `${id}:`];
       this.formatOutput(data, id);
     } catch (e) {
+      this.#menuPath = [...path, ''];
       this.Workflow.warnEmpty(`Error: ${e.message}`);
     }
   }
@@ -509,8 +581,6 @@ class Interface {
    * @param {number} id
    */
   formatOutput(nodes, id) {
-    this.Workflow.setVar('prevId', '');
-    // this.Workflow.setVar("action", "");
     const lookUp = {
       R: this.#formatRepo,
       U: this.#formatUser,
@@ -567,7 +637,7 @@ class Interface {
       mods: {
         cmd: {
           subtitle: 'Open menu',
-          variables: { prevNodeId: repo.id, prevId: id, action: '' },
+          variables: { menu_path: this.#submenuPath(id, repo.id), action: '' },
           icon: { path: 'icons/menu.png' },
           arg: '',
         },
@@ -610,7 +680,7 @@ class Interface {
       mods: {
         cmd: {
           subtitle: 'Open menu',
-          variables: { prevNodeId: user.id, prevId: id, action: '' },
+          variables: { menu_path: this.#submenuPath(id, user.id), action: '' },
           icon: { path: 'icons/menu.png' },
           arg: '',
         },
@@ -661,7 +731,7 @@ class Interface {
         options: JSON.stringify({
           ids: list.items.nodes.map(n => n.id),
         }),
-        prevId: id,
+        menu_path: this.#nodeParentPath(id),
       },
       match: matchStr(list.name),
       mods: {
@@ -726,8 +796,7 @@ class Interface {
       variables: {
         action: 'RELEASE_ASSETS',
         options: JSON.stringify({ id: release.id }),
-        prevId: id,
-        prevNodeId: '',
+        menu_path: this.#nodeParentPath(id),
       },
       quicklookurl: release.url,
       match: matchStr(release.name, release.tagName),
@@ -879,19 +948,24 @@ class Interface {
     });
   }
 
-  async subMenu() {
-    const nodes = this.#Cache.requestCacheById(this.#prevId)?.data;
+  /**
+   * Render a node submenu. `prevId` is the cached list the node came from (a
+   * lookup shortcut; may be a sentinel like -1), `prevNodeId` is the node id.
+   * @param {number|string} prevId
+   * @param {string} prevNodeId
+   */
+  async subMenu(prevId, prevNodeId) {
+    const nodes = this.#Cache.requestCacheById(prevId)?.data;
     try {
       const node
-        = nodes?.find(n => n.id === this.#prevNodeId)
-          || (await this.#Cache.request('NODES', { ids: [this.#prevNodeId] }))
+        = nodes?.find(n => n.id === prevNodeId)
+          || (await this.#Cache.request('NODES', { ids: [prevNodeId] }))
             .data?.[0];
-      if (this.#prevNodeId.startsWith('R_')) {
+      if (prevNodeId.startsWith('R_')) {
         this.#repoMenu(node);
       } else {
         this.#userMenu(node);
       }
-      this.Workflow.setVar('prevNodeId', '');
     } catch (e) {
       this.Workflow.warnEmpty(`Error: ${e.message}`);
     }
@@ -955,7 +1029,10 @@ class Interface {
       },
       match: `user ${owner}`,
       quicklookurl: repo.url.replace(`/${name}`, ''),
-      variables: { prevNodeId: repo.owner.id, prevId: -1 },
+      variables: {
+        menu_path: this.#childPath(`-1:${repo.owner.id}`),
+        action: '',
+      },
     });
     repo.issues.totalCount
     && this.Workflow.addItem({
@@ -969,8 +1046,7 @@ class Interface {
       variables: {
         action: 'SEARCH_ISSUE',
         queryPrefix: `repo:${repo.nameWithOwner} state:open, type:issue`,
-        prevId: this.#prevId,
-        prevNodeId: this.#prevNodeId,
+        menu_path: this.#pathVar(),
       },
       mods: {
         cmd: {
@@ -992,8 +1068,7 @@ class Interface {
       variables: {
         action: 'SEARCH_ISSUE',
         queryPrefix: `repo:${repo.nameWithOwner} state:open, type:pr`,
-        prevId: this.#prevId,
-        prevNodeId: this.#prevNodeId,
+        menu_path: this.#pathVar(),
       },
       mods: {
         cmd: {
@@ -1012,8 +1087,7 @@ class Interface {
       variables: {
         action: 'REPO_RELEASES',
         options: JSON.stringify({ owner, name }),
-        prevId: this.#prevId,
-        prevNodeId: this.#prevNodeId,
+        menu_path: this.#pathVar(),
       },
     });
     this.Workflow.addItem({
@@ -1024,8 +1098,7 @@ class Interface {
       variables: {
         action: 'REPO_TREE',
         options: JSON.stringify({ owner, name }),
-        prevId: this.#prevId,
-        prevNodeId: this.#prevNodeId,
+        menu_path: this.#pathVar(),
       },
     });
     if (owner !== this.#Cache.username) {
@@ -1071,8 +1144,7 @@ class Interface {
         variables: {
           action: 'FORK_REPO',
           options: JSON.stringify({ owner, repo: name }),
-          prevId: this.#prevId,
-          prevNodeId: this.#prevNodeId,
+          menu_path: this.#pathVar(),
         },
         mods: {
           cmd: {
@@ -1085,8 +1157,7 @@ class Interface {
             variables: {
               action: 'FORK_REPO',
               options: JSON.stringify({ owner, repo: name, default_branch_only: false }),
-              prevId: this.#prevId,
-              prevNodeId: this.#prevNodeId,
+              menu_path: this.#pathVar(),
             },
           },
         },
@@ -1102,12 +1173,10 @@ class Interface {
         variables: {
           action: 'NODES',
           options: JSON.stringify({ ids: [repo.parent.id] }),
-          prevId: this.#prevId,
-          prevNodeId: this.#prevNodeId,
+          menu_path: this.#pathVar(),
         },
       });
     }
-    this.#prevNodeId = null;
   }
 
   #userMenu(user) {
@@ -1154,8 +1223,7 @@ class Interface {
       variables: {
         action: 'SEARCH_REPO',
         queryPrefix: `${user.id.startsWith('U') ? 'user' : 'org'}:${user.login}`,
-        prevId: this.#prevId,
-        prevNodeId: this.#prevNodeId,
+        menu_path: this.#pathVar(),
       },
       mods: {
         cmd: {
@@ -1179,10 +1247,10 @@ class Interface {
         }),
       },
     });
-    this.#prevNodeId = null;
   }
 
   async createRepo(input) {
+    this.#menuPath = ['main:'];
     const options = JSON.parse(process.env.options || '{}');
     if (!options.name) {
       const nameWithOwner = `${this.#Cache.username}/${input}`;
@@ -1230,6 +1298,7 @@ class Interface {
     } else {
       try {
         const { data } = await this.#Cache.request('CREATE_REPO', options);
+        this.#menuPath = ['main:', `-1:${data.id}`];
         this.#repoMenu(data);
       } catch (e) {
         console.error(e.message);
@@ -1242,6 +1311,7 @@ class Interface {
     const options = JSON.parse(process.env.options || '{}');
     try {
       const { data } = await this.#Cache.request('FORK_REPO', options);
+      this.#menuPath = ['main:', `-1:${data.id}`];
       this.#repoMenu(data);
     } catch (e) {
       console.error(e.message);
@@ -1292,7 +1362,6 @@ class Interface {
   }
 
   logIn(input) {
-    this.#prevId = null;
     const { accessToken, baseUrl, gistUrl } = this.#Cache;
     this.Workflow.addItem({
       title: `Set Personal Access Token${input ? `: ${input}` : ''}`,
@@ -1344,7 +1413,6 @@ class Interface {
   }
 
   config(input) {
-    this.#prevId = null;
     this.Workflow.addItem({
       title: 'Clear Cache',
       icon: { path: 'icons/clear_cache.png' },

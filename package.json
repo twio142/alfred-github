@@ -15,7 +15,7 @@
     "@octokit/core": "^7.0.6",
     "@octokit/plugin-paginate-graphql": "^6.0.0",
     "@octokit/plugin-paginate-rest": "^14.0.0",
-    "better-sqlite3": "^12.11.1"
+    "better-sqlite3": "^13.0.2"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13"

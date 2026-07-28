@@ -12,14 +12,14 @@ class Cache {
   #enterprise = process.env.enterprise === 1;
   #accessToken = () =>
     this.#db
-      .prepare('SELECT value FROM configs WHERE key = \'accessToken\'')
+      .prepare(`SELECT value FROM configs WHERE key = 'accessToken'`)
       .get()
       ?.value;
 
   #apiUrl = () => {
     if (this.#enterprise) {
       const url = this.#db
-        .prepare('SELECT value FROM configs WHERE key = \'enterpriseUrl\'')
+        .prepare(`SELECT value FROM configs WHERE key = 'enterpriseUrl'`)
         .get()
         ?.value;
       return url ? url.replace(/\/?$/, '/api/v3') : null;
@@ -44,20 +44,20 @@ class Cache {
     mkdirSync(process.env.alfred_workflow_cache, { recursive: true });
     this.#db = new Database(Cache.#dbFile);
     this.#db.exec(`
-    CREATE TABLE IF NOT EXISTS cache (
-    id INTEGER PRIMARY KEY,
-    action TEXT NOT NULL,
-    options TEXT NOT NULL DEFAULT '{}',
-    data TEXT NOT NULL,
-    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
+      CREATE TABLE IF NOT EXISTS cache (
+        id INTEGER PRIMARY KEY,
+        action TEXT NOT NULL,
+        options TEXT NOT NULL DEFAULT '{}',
+        data TEXT NOT NULL,
+        timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
     this.#db.exec(`
-    CREATE TABLE IF NOT EXISTS configs (
-    key TEXT NOT NULL PRIMARY KEY,
-    value TEXT
-    );
-  `);
+      CREATE TABLE IF NOT EXISTS configs (
+        key TEXT NOT NULL PRIMARY KEY,
+        value TEXT
+      );
+    `);
     if (this.#loggedIn()) {
       this.#GitHub = new GitHub({
         auth: this.#accessToken(),
@@ -119,14 +119,12 @@ class Cache {
    */
   requestCache(action, options) {
     const row = this.#db
-      .prepare(
-        `
-    SELECT id, data, timestamp > DATETIME('now', '-10 minutes') AS fresh FROM cache
-    WHERE action = ? AND options = ?
-    ORDER BY timestamp DESC
-    LIMIT 1;
-  `,
-      )
+      .prepare(`
+        SELECT id, data, timestamp > DATETIME('now', '-10 minutes') AS fresh FROM cache
+        WHERE action = ? AND options = ?
+        ORDER BY timestamp DESC
+        LIMIT 1;
+      `)
       .get(action, Cache.#dict(options));
     if (row)
       row.data = JSON.parse(row.data);
@@ -141,12 +139,10 @@ class Cache {
     if (!Number.parseInt(id))
       return {};
     const row = this.#db
-      .prepare(
-        `
-    SELECT * FROM cache
-    WHERE id = ?
-  `,
-      )
+      .prepare(`
+        SELECT * FROM cache
+        WHERE id = ?
+      `)
       .get(Number.parseInt(id));
     if (row) {
       row.data = JSON.parse(row.data);
@@ -175,23 +171,19 @@ class Cache {
     id = Number.parseInt(id) || null;
     if (id) {
       this.#db
-        .prepare(
-          `
-    UPDATE cache
-    SET data = ?, timestamp = CURRENT_TIMESTAMP
-    WHERE id = ?
-    `,
-        )
+        .prepare(`
+          UPDATE cache
+          SET data = ?, timestamp = CURRENT_TIMESTAMP
+          WHERE id = ?
+        `)
         .run(JSON.stringify(data), id);
     } else {
       id = this.#db
-        .prepare(
-          `
-    INSERT INTO cache (action, options, data)
-    VALUES (?, ?, ?)
-    RETURNING id;
-    `,
-        )
+        .prepare(`
+          INSERT INTO cache (action, options, data)
+          VALUES (?, ?, ?)
+          RETURNING id;
+        `)
         .get(action, Cache.#dict(options), JSON.stringify(data))
         .id;
     }
@@ -275,9 +267,7 @@ class Cache {
     if (all) {
       this.#db.exec('DELETE FROM cache;');
     } else {
-      this.#db.exec(
-        'DELETE FROM cache WHERE timestamp < DATETIME(\'now\', \'-1 day\');',
-      );
+      this.#db.exec(`DELETE FROM cache WHERE timestamp < DATETIME('now', '-1 day');`);
     }
   }
 
@@ -291,13 +281,11 @@ class Cache {
 
   set accessToken(token) {
     this.#db
-      .prepare(
-        `
-    INSERT INTO configs (key, value)
-    VALUES ('accessToken', ?)
-    ON CONFLICT DO UPDATE SET value = ?;
-  `,
-      )
+      .prepare(`
+        INSERT INTO configs (key, value)
+        VALUES ('accessToken', ?)
+        ON CONFLICT DO UPDATE SET value = ?;
+      `)
       .run(token, token);
     if (this.#loggedIn()) {
       this.#GitHub = new GitHub({
@@ -314,7 +302,7 @@ class Cache {
   get baseUrl() {
     return this.#enterprise
       ? this.#db
-          .prepare('SELECT value FROM configs WHERE key = \'enterpriseUrl\'')
+          .prepare(`SELECT value FROM configs WHERE key = 'enterpriseUrl'`)
           .get()
           ?.value
           ?.replace(/\/$/, '')
@@ -325,13 +313,11 @@ class Cache {
     url = url.replace(/\/$/, '');
     if (this.#enterprise) {
       this.#db
-        .prepare(
-          `
-    INSERT INTO configs (key, value)
-    VALUES ('enterpriseUrl', ?)
-    ON CONFLICT DO UPDATE SET value = ?;
-    `,
-        )
+        .prepare(`
+          INSERT INTO configs (key, value)
+          VALUES ('enterpriseUrl', ?)
+          ON CONFLICT DO UPDATE SET value = ?;
+        `)
         .run(url, url);
       if (this.#loggedIn()) {
         this.#GitHub = new GitHub({
@@ -345,7 +331,7 @@ class Cache {
   get gistUrl() {
     return this.#enterprise
       ? this.#db
-        .prepare('SELECT value FROM configs WHERE key = \'gistUrl\'')
+        .prepare(`SELECT value FROM configs WHERE key = 'gistUrl'`)
         .get()
         ?.value
       : 'https://gist.github.com';
@@ -354,13 +340,11 @@ class Cache {
   set gistUrl(url) {
     if (this.#enterprise) {
       this.#db
-        .prepare(
-          `
-    INSERT INTO configs (key, value)
-    VALUES ('gistUrl', ?)
-    ON CONFLICT DO UPDATE SET value = ?;
-    `,
-        )
+        .prepare(`
+          INSERT INTO configs (key, value)
+          VALUES ('gistUrl', ?)
+          ON CONFLICT DO UPDATE SET value = ?;
+        `)
         .run(url, url);
     }
   }

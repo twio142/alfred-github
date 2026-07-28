@@ -37,7 +37,10 @@ class GitHub {
     MY_STARRED_GISTS: ['GET /gists/starred', { per_page: 100 }],
     SEARCH_TOPIC: ['GET /search/topics', { q: '', per_page: 20 }],
     MY_CODESPACES: ['GET /user/codespaces', { per_page: 100 }],
-    FORK_REPO: ['POST /repos/{owner}/{repo}/forks', { owner: '', repo: '', default_branch_only: true }],
+    FORK_REPO: [
+      'POST /repos/{owner}/{repo}/forks',
+      { owner: '', repo: '', default_branch_only: true },
+    ],
   };
 
   static #GQL = GQL;
@@ -100,8 +103,7 @@ class GitHub {
             ? options[key]
             : ACTION[1][key][0];
         } else {
-          ACTION[1][key]
-            = options[key] === undefined ? ACTION[1][key] : options[key];
+          ACTION[1][key] = options[key] === undefined ? ACTION[1][key] : options[key];
         }
       }
       ACTION[1].headers = GitHub.headers;

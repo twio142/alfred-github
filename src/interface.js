@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-import { execSync } from 'child_process';
+import { spawnSync } from 'child_process';
 import { realpathSync } from 'fs';
 import { fileURLToPath } from 'url';
 import Cache from './cache.js';
@@ -628,7 +628,9 @@ class Interface {
       variables: { execute: 'open_link' },
       match: matchStr(repo.nameWithOwner),
       icon: {
-        path: `icons/repo${repo.isPrivate ? '_private' : repo.viewerHasStarred ? '_star' : ''}.png`,
+        path: `icons/repo${
+          repo.isPrivate ? '_private' : repo.viewerHasStarred ? '_star' : ''
+        }.png`,
       },
       text: {
         largetype: repo.description,
@@ -749,7 +751,13 @@ class Interface {
       PENDING: '􀖇 ',
       ERROR: '􀅎 ',
     };
-    const title = [stateIcons[checkState], issue.title, issue.viewerSubscription === 'SUBSCRIBED' ? '  􀋙' : ''].filter(Boolean).join('');
+    const title = [
+      stateIcons[checkState],
+      issue.title,
+      issue.viewerSubscription === 'SUBSCRIBED' ? '  􀋙' : '',
+    ]
+      .filter(Boolean)
+      .join('');
     const comments = convertNum(issue.comments.totalCount);
     const updated = datetimeFormat(issue.updatedAt);
     const subtitle = [
@@ -759,7 +767,9 @@ class Interface {
     ]
       .filter(Boolean)
       .join(' · ');
-    const icon = `icons/${issue.id.startsWith('I') ? 'issue' : 'pullRequest'}_${issue.state.toLowerCase()}.png`;
+    const icon = `icons/${
+      issue.id.startsWith('I') ? 'issue' : 'pullRequest'
+    }_${issue.state.toLowerCase()}.png`;
     this.Workflow.addItem({
       title,
       subtitle,
@@ -777,10 +787,9 @@ class Interface {
   }
 
   #formatRelease(release, id) {
-    const tag
-      = release.tagName && release.tagName !== release.name
-        ? ` (􀋡 ${release.tagName})`
-        : '';
+    const tag = release.tagName && release.tagName !== release.name
+      ? ` (􀋡 ${release.tagName})`
+      : '';
     const title = `${release.name}${tag}  ${release.isPrerelease ? '🚧' : ''}`;
     const assets = release.releaseAssets.totalCount
       ? `􀐚 ${release.releaseAssets.totalCount}`
@@ -829,9 +838,7 @@ class Interface {
       match: matchStr(asset.name),
       variables: { execute: 'open_link' },
       icon: { path: 'icons/asset.png' },
-      text: {
-        largetype: asset.description,
-      },
+      text: { largetype: asset.description },
       mods: {
         alt: { subtitle: asset.description || '', valid: !1 },
       },
@@ -854,8 +861,7 @@ class Interface {
   }
 
   #formatNotification(notification) {
-    const { title, url, repo, updated_at, tag, thread_id, type, state }
-      = notification;
+    const { title, url, repo, updated_at, tag, thread_id, type, state } = notification;
     const icon = ['Issue', 'PullRequest'].includes(type)
       ? `${type.toLowerCase()}_${state}`
       : type.toLowerCase();
@@ -905,8 +911,7 @@ class Interface {
   }
 
   #formatCodespace(codespace) {
-    const { name, state, repository, url, git_status, last_used_at }
-      = codespace;
+    const { name, state, repository, url, git_status, last_used_at } = codespace;
     this.Workflow.addItem({
       title: `${repository}  ·  􀙠 ${git_status.ref}`,
       subtitle: `${state}, 􀣔 ${datetimeFormat(last_used_at)}`,
@@ -957,10 +962,8 @@ class Interface {
   async subMenu(prevId, prevNodeId) {
     const nodes = this.#Cache.requestCacheById(prevId)?.data;
     try {
-      const node
-        = nodes?.find(n => n.id === prevNodeId)
-          || (await this.#Cache.request('NODES', { ids: [prevNodeId] }))
-            .data?.[0];
+      const node = nodes?.find(n => n.id === prevNodeId)
+        || (await this.#Cache.request('NODES', { ids: [prevNodeId] })).data?.[0];
       if (prevNodeId.startsWith('R_')) {
         this.#repoMenu(node);
       } else {
@@ -981,7 +984,9 @@ class Interface {
       title: repo.nameWithOwner,
       subtitle: 'Open in browser',
       icon: {
-        path: `icons/repo${repo.isPrivate ? '_private' : repo.viewerHasStarred ? '_star' : ''}.png`,
+        path: `icons/repo${
+          repo.isPrivate ? '_private' : repo.viewerHasStarred ? '_star' : ''
+        }.png`,
       },
       match: 'wiki homepage ssh url link',
       quicklookurl: repo.url,
@@ -1121,7 +1126,9 @@ class Interface {
             ? 'Unwatch Repo'
             : 'Watch Repo',
         icon: {
-          path: `icons/${repo.viewerSubscription === 'SUBSCRIBED' ? 'unseen' : 'watching'}.png`,
+          path: `icons/${
+            repo.viewerSubscription === 'SUBSCRIBED' ? 'unseen' : 'watching'
+          }.png`,
         },
         match: 'watch subscribe',
         variables: {
@@ -1261,10 +1268,8 @@ class Interface {
     const options = JSON.parse(process.env.options || '{}');
     if (!options.name) {
       const nameWithOwner = `${this.#Cache.username}/${input}`;
-      let valid
-        = /^[\w\-.]{1,100}$/.test(input) && !/^[.-]|[.-]$|--/.test(input);
-      let message
-        = input.length === 0 || valid ? '' : '􀇾 Invalid repository name';
+      let valid = /^[\w\-.]{1,100}$/.test(input) && !/^[.-]|[.-]$|--/.test(input);
+      let message = input.length === 0 || valid ? '' : '􀇾 Invalid repository name';
       if (valid) {
         try {
           const { data: myRepos } = await this.#Cache.requestCache('MY_REPOS', {
@@ -1328,7 +1333,7 @@ class Interface {
 
   #copyKeys() {
     const url = `${this.#Cache.baseUrl}/${this.#Cache.username}.keys`;
-    execSync(`curl -s ${url} | pbcopy`);
+    fetch(url).then(res => res.text()).then(input => spawnSync('pbcopy', [], { input }));
   }
 
   runCommand(command, input) {
@@ -1439,9 +1444,8 @@ class Interface {
         break;
       }
       case 'SUBSCRIBE': {
-        const name
-          = data.nameWithOwner
-            || `${data.repository.nameWithOwner} #${data.number}`;
+        const name = data.nameWithOwner
+          || `${data.repository.nameWithOwner} #${data.number}`;
         notify(
           `${
             data.viewerSubscription === 'SUBSCRIBED' ? 'Watching' : 'Unwatched'

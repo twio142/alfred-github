@@ -107,10 +107,19 @@ class GitHub {
         }
       }
       ACTION[1].headers = GitHub.headers;
-      if (options.multiPages) {
-        data = await this.#Octokit.graphql.paginate(...ACTION);
-      } else {
-        data = await this.#Octokit.graphql(...ACTION);
+      // GitHub answers 502 when a query runs past its time limit, so a query
+      // with a `first` variable is retried with half the page size.
+      while (true) {
+        try {
+          data = options.multiPages
+            ? await this.#Octokit.graphql.paginate(...ACTION)
+            : await this.#Octokit.graphql(...ACTION);
+          break;
+        } catch (e) {
+          if (![502, 504].includes(e.status) || !(ACTION[1].first > 1))
+            throw e;
+          ACTION[1].first = Math.floor(ACTION[1].first / 2);
+        }
       }
       if (action === 'REPO_TREE') {
         data = await this.#getTree(data);

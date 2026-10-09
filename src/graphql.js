@@ -392,9 +392,9 @@ const MY_WATCHING = [
 
 const MY_STARS = [
   `
-  query MyStars($cursor: String) {
+  query MyStars($cursor: String, $first: Int!) {
     viewer {
-      starredRepositories(first: 50, after: $cursor, orderBy: {field: STARRED_AT, direction: DESC}) {
+      starredRepositories(first: $first, after: $cursor, orderBy: {field: STARRED_AT, direction: DESC}) {
         nodes {
           ...queryRepo
         }
@@ -409,6 +409,7 @@ const MY_STARS = [
   `,
   {
     cursor: null,
+    first: 20,
   },
 ];
 

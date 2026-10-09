@@ -457,15 +457,10 @@ class Interface {
     });
   }
 
-  async myRelatedRepos() {
-    const promises = Cache.myRelatedRepos.map(([action, options]) =>
-      this.#Cache.request(action, options).catch((e) => {
-        console.error(e.message);
-        return {};
-      }),
-    );
+  myRelatedRepos() {
     const repos = [];
-    (await Promise.all(promises))
+    Cache.myRelatedRepos
+      .map(([action, options]) => this.#Cache.requestDeferred(action, options))
       .map(p => p.data?.map(node => ({ ...node, prevId: p.id })) || [])
       .flat()
       .map(node =>
@@ -491,7 +486,7 @@ class Interface {
         valid: false,
       });
     } else {
-      await this.myRelatedRepos();
+      this.myRelatedRepos();
       this.Workflow.filter(input);
     }
     this.Workflow.addItem({

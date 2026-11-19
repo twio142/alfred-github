@@ -362,14 +362,14 @@ const ME = [
 
 const MY_REPOS = [
   `
-  query UserRepos($cursor: String) {
+  query UserRepos($cursor: String, $first: Int!) {
     viewer {
       ...getRepos
     }
   }
   ${QUERY_REPO}
   fragment getRepos on RepositoryOwner {
-    repositories(first: 50, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
+    repositories(first: $first, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
       nodes {
         ...queryRepo
       }
@@ -382,14 +382,15 @@ const MY_REPOS = [
   `,
   {
     cursor: null,
+    first: 100,
   },
 ];
 
 const MY_WATCHING = [
   `
-  query MyWatching($cursor: String) {
+  query MyWatching($cursor: String, $first: Int!) {
     viewer {
-      watching(first: 50, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
+      watching(first: $first, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
         nodes {
           ...queryRepo
         }
@@ -404,6 +405,7 @@ const MY_WATCHING = [
   `,
   {
     cursor: null,
+    first: 100,
   },
 ];
 
@@ -426,7 +428,7 @@ const MY_STARS = [
   `,
   {
     cursor: null,
-    first: 20,
+    first: 100,
   },
 ];
 
@@ -519,9 +521,9 @@ const MY_LISTS = [
 
 const MY_FOLLOWING = [
   `
-  query MyFollowing($cursor: String) {
+  query MyFollowing($cursor: String, $first: Int!) {
     viewer {
-      following(first: 50, after: $cursor) {
+      following(first: $first, after: $cursor) {
         nodes {
           ...queryUser
         }
@@ -536,14 +538,15 @@ const MY_FOLLOWING = [
   `,
   {
     cursor: null,
+    first: 100,
   },
 ];
 
 const MY_ISSUES = [
   `
-  query MyIssues($states: [IssueState!] = OPEN, $cursor: String) {
+  query MyIssues($states: [IssueState!] = OPEN, $cursor: String, $first: Int!) {
     viewer {
-      issues(first: 50, orderBy: {field: UPDATED_AT, direction: DESC}, filterBy: {viewerSubscribed: true, states: $states}, after: $cursor) {
+      issues(first: $first, orderBy: {field: UPDATED_AT, direction: DESC}, filterBy: {viewerSubscribed: true, states: $states}, after: $cursor) {
         nodes {
           ...queryIssue
         }
@@ -560,14 +563,15 @@ const MY_ISSUES = [
   {
     states: new Enum('OPEN', null),
     cursor: null,
+    first: 50,
   },
 ];
 
 const MY_PRS = [
   `
-  query MyPRs($cursor: String) {
+  query MyPRs($cursor: String, $first: Int!) {
     viewer {
-      pullRequests(first: 50, orderBy: {field: UPDATED_AT, direction: DESC}, states: OPEN, after: $cursor) {
+      pullRequests(first: $first, orderBy: {field: UPDATED_AT, direction: DESC}, states: OPEN, after: $cursor) {
         nodes {
           ...queryPR
         }
@@ -583,14 +587,15 @@ const MY_PRS = [
   `,
   {
     cursor: null,
+    first: 50,
   },
 ];
 
 const MY_PROJECTS = [
   `
-  query MyProjects($cursor: String) {
+  query MyProjects($cursor: String, $first: Int!) {
     viewer {
-      projectsV2(first: 50, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
+      projectsV2(first: $first, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
         nodes {
           id
           title
@@ -609,6 +614,7 @@ const MY_PROJECTS = [
   }`,
   {
     cursor: null,
+    first: 50,
   },
 ];
 

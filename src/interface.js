@@ -46,6 +46,7 @@ class Interface {
     this.Workflow.setVar('options', '');
     this.Workflow.setVar('queryPrefix', '');
     this.Workflow.setVar('execute', '');
+    this.Workflow.setVar('details_pending', '');
     if (process.env.action === 'CREATE_REPO') {
       await this.createRepo(input);
     } else if (process.env.action === 'FORK_REPO') {
@@ -970,11 +971,36 @@ class Interface {
     }
   }
 
+  /**
+   * Issue/PR/release counts for the repo menu, which lists leave out. A missing
+   * row is fetched in the background and the menu reruns (up to 10 times, via
+   * `details_pending`, which Alfred passes back on rerun) until it lands.
+   * @param {string} id
+   * @returns {object} the cached counts, or {} while they're being fetched
+   */
+  #repoDetails(id) {
+    const [pendingId, tries] = (process.env.details_pending || '').split(':');
+    const waiting = pendingId === id;
+    const { data } = this.#Cache.requestDeferred('REPO_DETAILS', { id }, !waiting);
+    if (data)
+      return data;
+    const n = waiting ? Number(tries) + 1 : 0;
+    if (n < 10) {
+      this.Workflow.rerun = 0.5;
+      this.Workflow.setVar('details_pending', `${id}:${n}`);
+    }
+    return {};
+  }
+
   #repoMenu(repo) {
     if (!repo) {
       this.Workflow.warnEmpty('Repo Not Found.');
       return;
     }
+    repo = { ...repo, ...this.#repoDetails(repo.id) };
+    // An unknown count (still being fetched) shows the item without a number.
+    const count = (n, noun) =>
+      n === undefined ? undefined : `${n} ${noun}${n > 1 ? 's' : ''}`;
     const [owner, name] = repo.nameWithOwner.split('/');
     this.Workflow.addItem({
       title: repo.nameWithOwner,
@@ -1035,12 +1061,10 @@ class Interface {
         action: '',
       },
     });
-    repo.issues.totalCount
+    repo.issues?.totalCount !== 0
     && this.Workflow.addItem({
       title: 'Issues',
-      subtitle: `${repo.issues.totalCount} issue${
-        repo.issues.totalCount > 1 ? 's' : ''
-      }`,
+      subtitle: count(repo.issues?.totalCount, 'issue'),
       icon: { path: 'icons/issue.png' },
       match: 'issues',
       quicklookurl: `${repo.url}/issues`,
@@ -1057,12 +1081,10 @@ class Interface {
         },
       },
     });
-    repo.pullRequests.totalCount
+    repo.pullRequests?.totalCount !== 0
     && this.Workflow.addItem({
       title: 'Pull Requests',
-      subtitle: `${repo.pullRequests.totalCount} pull request${
-        repo.pullRequests.totalCount > 1 ? 's' : ''
-      }`,
+      subtitle: count(repo.pullRequests?.totalCount, 'pull request'),
       icon: { path: 'icons/pullRequest.png' },
       match: 'prs pull requests',
       quicklookurl: `${repo.url}/pulls`,
@@ -1079,7 +1101,7 @@ class Interface {
         },
       },
     });
-    repo.releases.totalCount
+    repo.releases?.totalCount !== 0
     && this.Workflow.addItem({
       title: 'Releases',
       icon: { path: 'icons/release.png' },

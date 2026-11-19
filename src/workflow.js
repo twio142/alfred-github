@@ -3,6 +3,7 @@
 class Workflow {
   items = [];
   variables = {};
+  rerun;
   // #debug = !!process.env.alfred_debug;
 
   filter(str = '') {
@@ -41,6 +42,7 @@ class Workflow {
       JSON.stringify({
         items: this.items,
         variables: this.variables,
+        rerun: this.rerun,
       }),
     );
   }

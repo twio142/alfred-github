@@ -90,15 +90,17 @@ class Cache {
 
   /**
    * Never waits on the API: returns whatever is cached, refreshing a stale row
-   * in the background. A missing row is left to `refreshInBackground`.
+   * in the background. A missing row is left to `refreshInBackground`, unless
+   * `fetchMissing` asks for it to be fetched in the background too.
    * @param {string} action
    * @param {object} options
+   * @param {boolean} fetchMissing
    * @returns {{data: object, id: number}} response
    */
-  requestDeferred(action, options = {}) {
+  requestDeferred(action, options = {}, fetchMissing = !1) {
     const row = this.requestCache(action, options);
-    if (row.data && !row.fresh)
-      this.#cacheInBackground(action, options, row.id);
+    if (row.data ? !row.fresh : fetchMissing)
+      this.#cacheInBackground(action, options, row.id ?? '');
     return { data: row.data, id: row.id };
   }
 

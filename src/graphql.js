@@ -12,15 +12,6 @@ fragment queryRepo on Repository {
   }
   updatedAt
   stargazerCount
-  pullRequests(states: OPEN) {
-    totalCount
-  }
-  issues(states: OPEN) {
-    totalCount
-  }
-  releases {
-    totalCount
-  }
   owner {
     id
   }
@@ -211,6 +202,32 @@ const REPO_PRS = [
     owner: '',
     name: '',
     cursor: null,
+  },
+];
+
+// Counts are slow to compute (several seconds for a page of popular repos), so
+// `queryRepo` leaves them out and the repo menu fetches them per repo.
+const REPO_DETAILS = [
+  `
+  query RepoDetails($id: ID!) {
+    node(id: $id) {
+      ... on Repository {
+        id
+        pullRequests(states: OPEN) {
+          totalCount
+        }
+        issues(states: OPEN) {
+          totalCount
+        }
+        releases {
+          totalCount
+        }
+      }
+    }
+  }
+  `,
+  {
+    id: '',
   },
 ];
 
@@ -779,6 +796,7 @@ export {
   MY_WATCHING,
   NODES,
   RELEASE_ASSETS,
+  REPO_DETAILS,
   REPO_ISSUES,
   REPO_PRS,
   REPO_RELEASES,
